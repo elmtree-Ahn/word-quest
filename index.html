@@ -213,9 +213,18 @@ app.addEventListener('click',e=>{const b=e.target.closest('[data-say]');if(b)spe
 // 브라우저 팝업(prompt/confirm) 대신 쓰는 화면 안 확인창
 function ask(msg,onYes){
   const m=$('#modal');
-  m.innerHTML=`<div class="card"><div style="font-size:1.3rem;margin-bottom:14px">${msg}</div><div class="row"><button class="btn danger" id="m-yes">네</button><button class="btn" id="m-no">아니요</button></div></div>`;
+  m.innerHTML=`<div class="card"><div style="font-size:1.3rem;margin-bottom:14px">${msg}</div><div class="row"><button class="btn blue" id="m-yes">네</button><button class="btn" id="m-no">아니요</button></div></div>`;
   m.classList.add('show');
   $('#m-yes').onclick=()=>{m.classList.remove('show');onYes();};
+  $('#m-no').onclick=()=>m.classList.remove('show');
+}
+function askForm(title,fields,onOk){
+  const m=$('#modal');
+  m.innerHTML=`<div class="card" style="text-align:left"><div style="font-size:1.3rem;margin-bottom:10px;text-align:center">${title}</div>
+    ${fields.map(f=>`<div class="lbl">${f.label}</div><input id="f-${f.id}" class="inp" style="font-family:Jua;font-size:1.1rem;text-align:left;margin:2px 0 10px" value="${esc(f.value||'')}" ${f.list?'list="glist"':''} autocapitalize="off">`).join('')}
+    <div class="row"><button class="btn blue" id="m-yes">저장</button><button class="btn" id="m-no">취소</button></div></div>`;
+  m.classList.add('show');$('#f-'+fields[0].id).focus();
+  $('#m-yes').onclick=()=>{const v={};fields.forEach(f=>v[f.id]=$('#f-'+f.id).value.trim());m.classList.remove('show');onOk(v);};
   $('#m-no').onclick=()=>m.classList.remove('show');
 }
 
@@ -374,12 +383,14 @@ function showRoundIntro(){
   render(`
     <h1>${c.test?'TEST':boss?'BOSS<br>BATTLE':'ROUND '+(c.round+1)}<small>${c.test?'🧪 '+esc(c.test)+' · '+c.wids.length+'단어 전체 복습':boss?'👑 오늘 배운 단어 총정리':TYPE_NAME[type]}</small></h1>
     <div class="card tilt"><div style="font-size:1.3rem">${boss?'여러 가지 방식으로 섞어서 나와요':ROUND_DESC[type]}</div></div>
-    <button class="btn primary" onclick="showItem()">GO!</button>`);
+    <button class="btn primary" onclick="showItem()">GO!</button>
+    <button class="btn link" onclick="quitToHome()">🏠 홈으로 (나중에 이어하기)</button>`);
 }
+function quitToHome(){ask('잠깐 쉬고 홈으로 갈까요?<br><span class="muted" style="font-size:1rem">진행 상황은 남아 있어요. 홈에서 이어하기를 누르면 돼요.</span>',()=>{if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});showHome();});}
 function showItem(){
   view='game';
   const c=S.cur,it=c.queue[c.idx],w=W(it.wid),total=c.queue.length;
-  render(`<div class="top"><span class="badge">${c.test?'🧪 TEST':it.boss?'👑 BOSS':'ROUND '+(c.round+1)}</span><span>${TYPE_NAME[it.type]}</span><span>${c.idx+1}/${total} <button class="ico" onclick="goFull()" title="전체화면">⛶</button></span></div>
+  render(`<div class="top"><span class="badge">${c.test?'🧪 TEST':it.boss?'👑 BOSS':'ROUND '+(c.round+1)}</span><span>${TYPE_NAME[it.type]}</span><span>${c.idx+1}/${total} <button class="ico" onclick="goFull()" title="전체화면">⛶</button> <button class="ico" onclick="quitToHome()" title="홈으로">🏠</button></span></div>
     <div class="bar"><i style="width:${c.idx/total*100}%"></i></div><div id="g"></div>`);
   GAMES[it.type](w,it);
 }
@@ -591,8 +602,8 @@ function showParent(){
     <div class="row"><button class="btn blue" id="addw">추가</button><button class="btn ghost" id="sample">예시 단어 20개 넣기</button></div>
     <h2>단어 목록 (${S.words.length}개)</h2>
     <div class="panel">${S.words.length?`<table><tr><th>영어</th><th>뜻</th><th>숙련도</th><th>복습</th><th></th></tr>
-      ${groups().map(g=>{const ws=S.words.filter(w=>w.group===g);return `<tr class="grp"><td colspan="4"><b>📚 ${esc(g)}</b> <span class="muted">${ws.length}개</span></td><td><button class="x" data-delg="${esc(g)}" title="묶음 지우기">✕</button></td></tr>`+
-        ws.map(w=>`<tr><td><b class="en">${esc(w.en)}</b>${w.form?`<div class="muted" style="font-size:.8rem">- ${esc(w.form)}</div>`:''}</td><td>${esc(w.ko)}</td><td class="stars">${stars(w.mastery)}</td><td class="muted">${w.due?(w.due<=t?'오늘':w.due.slice(5)):'-'}</td><td><button class="x" data-del="${w.id}">✕</button></td></tr>`).join('');}).join('')}</table>`:'<div class="muted" style="padding:8px">아직 없어요</div>'}</div>
+      ${groups().map(g=>{const ws=S.words.filter(w=>w.group===g);return `<tr class="grp"><td colspan="4"><b>📚 ${esc(g)}</b> <span class="muted">${ws.length}개</span></td><td style="white-space:nowrap"><button class="x" data-editg="${esc(g)}" title="이름 바꾸기">✏️</button><button class="x" data-delg="${esc(g)}" title="묶음 지우기">✕</button></td></tr>`+
+        ws.map(w=>`<tr><td><b class="en">${esc(w.en)}</b>${w.form?`<div class="muted" style="font-size:.8rem">- ${esc(w.form)}</div>`:''}</td><td>${esc(w.ko)}</td><td class="stars">${stars(w.mastery)}</td><td class="muted">${w.due?(w.due<=t?'오늘':w.due.slice(5)):'-'}</td><td style="white-space:nowrap"><button class="x" data-edit="${w.id}" title="수정">✏️</button><button class="x" data-del="${w.id}">✕</button></td></tr>`).join('');}).join('')}</table>`:'<div class="muted" style="padding:8px">아직 없어요</div>'}</div>
     <h2>학습 기록</h2>
     <div class="panel list">${sessions.length?sessions.map(s=>`<div><b>${s.date}</b> · 정복 ${s.conquered.length}/${s.wids.length} · ${Math.round(s.seconds/60)}분 · 화면 이탈 ${s.exits}회</div>`).join(''):'<div class="muted">아직 없어요</div>'}</div>
     <h2>내일까지 복습 예정 (${due.length}개)</h2>
@@ -603,6 +614,11 @@ function showParent(){
   $('#addw').onclick=()=>{const n=addWords(parseWords($('#wt').value),$('#wg').value);toast(n+'개 추가했어요');showParent();};
   $('#sample').onclick=()=>{const n=addWords(parseWords(SAMPLE),$('#wg').value||'예시');toast(n+'개 추가했어요');showParent();};
   app.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{const w=W(b.dataset.del);ask(`"${esc(w.en)}" 지울까요?`,()=>{S.words=S.words.filter(x=>x.id!==w.id);save();showParent();});});
+  app.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>{const w=W(b.dataset.edit);askForm('단어 수정',[{id:'en',label:'영어',value:w.en},{id:'form',label:'변화형 (선택, 예: pretended)',value:w.form},{id:'ko',label:'뜻',value:w.ko},{id:'group',label:'묶음',value:w.group,list:true}],v=>{
+    if(!v.en||!v.ko){toast('영어와 뜻은 비울 수 없어요');return;}
+    w.en=v.en.toLowerCase();w.form=v.form;w.ko=v.ko;w.group=v.group||'기본';save();showParent();toast('고쳤어요');});});
+  app.querySelectorAll('[data-editg]').forEach(b=>b.onclick=()=>{const g=b.dataset.editg;askForm('묶음 이름 바꾸기',[{id:'g',label:'묶음 이름',value:g}],v=>{
+    const ng=v.g||'기본';S.words.forEach(w=>{if(w.group===g)w.group=ng;});if(S.group===g)S.group=ng;save();showParent();toast('바꿨어요');});});
   app.querySelectorAll('[data-delg]').forEach(b=>b.onclick=()=>{const g=b.dataset.delg;ask(`"${esc(g)}" 묶음 전체를 지울까요?`,()=>{S.words=S.words.filter(x=>x.group!==g);save();showParent();});});
   $('#reset').onclick=()=>{
     ask('단어와 기록을 모두 지울까요?<br><input id="rpw" class="inp" type="password" style="font-size:1.2rem;font-family:Jua" placeholder="초기화 비밀번호">',()=>{
