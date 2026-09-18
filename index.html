@@ -93,7 +93,7 @@ h2{font-size:1.15rem;margin:26px 0 10px;color:var(--yellow);text-shadow:0 2px 0 
 .cheer{display:block;font-size:1.05rem;color:var(--yellow);margin-top:6px;-webkit-text-stroke:0}
 .wrongmsg{text-align:center;font-size:1.3rem;margin-top:14px;text-shadow:0 2px 0 var(--ink)}
 .wrongmsg b{color:var(--yellow);font-family:'Lilita One';font-size:1.5rem}
-#toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:var(--yellow);color:var(--ink);border:3px solid var(--ink);box-shadow:0 4px 0 var(--ink);padding:12px 20px;border-radius:30px;opacity:0;transition:opacity .3s;pointer-events:none;max-width:90%;z-index:9;font-size:1.1rem}
+#toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:var(--yellow);color:var(--ink);border:3px solid var(--ink);box-shadow:0 4px 0 var(--ink);padding:12px 20px;border-radius:30px;opacity:0;transition:opacity .3s;pointer-events:none;max-width:90%;z-index:80;font-size:1.1rem}
 #toast.show{opacity:1}
 #modal{position:fixed;inset:0;background:rgba(10,10,40,.7);display:none;align-items:center;justify-content:center;padding:20px;z-index:70}
 #modal.show{display:flex}
@@ -647,6 +647,10 @@ function showRoundIntro(){
     <div class="card tilt"><div style="font-size:1.3rem">${ROUND_DESC[type]}</div><div class="sub">${c.round+1}/3 라운드 · ${esc(c.group||'')}</div></div>
     <button class="btn primary" onclick="showItem()">GO!</button>
     <button class="btn link" onclick="quitToHome()">🏠 홈으로 (나중에 이어하기)</button>`);
+}
+function quitToHome(){
+  $('#modal').style.cssText='';
+  ask('잠깐 쉬고 홈으로 갈까요?<br><span class="muted" style="font-size:1rem">진행 상황은 남아 있어요. 홈에서 이어하기를 누르면 돼요.</span>',()=>{if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});showHome();});
 }
 function showItem(){
   view='game';
