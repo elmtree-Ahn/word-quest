@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#1e3a8a">
-<title>WORD QUEST · 단어 모험</title>
+<title>브롤잉글리쉬 · BRAWL ENGLISH</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Jua&display=swap" rel="stylesheet">
 <style>
@@ -72,7 +72,8 @@ h2{font-size:1.15rem;margin:26px 0 10px;color:var(--yellow);text-shadow:0 2px 0 
 .inp{width:100%;padding:16px;font-size:1.8rem;border:4px solid var(--ink);border-radius:16px;text-align:center;margin-top:10px;font-family:'Lilita One';color:var(--ink);box-shadow:inset 0 4px 0 var(--pale);outline:none}
 .inp:focus{box-shadow:inset 0 4px 0 var(--pale),0 0 0 4px rgba(255,210,63,.5)}
 .hint{text-align:center;font-size:1.6rem;letter-spacing:.1em;color:var(--yellow);text-shadow:0 3px 0 var(--ink);min-height:1.8em;font-family:'Lilita One'}
-.good{text-align:center;color:var(--green);-webkit-text-stroke:1px var(--ink);text-shadow:0 3px 0 var(--ink);font-family:'Lilita One';font-size:1.9rem;margin-top:14px;animation:pop .4s}
+.good{text-align:center;color:var(--green);-webkit-text-stroke:.6px var(--ink);text-shadow:0 3px 0 var(--ink);font-family:'Jua';font-size:1.45rem;margin-top:14px;animation:pop .4s;line-height:1.3}
+.cheer{display:block;font-size:1.05rem;color:var(--yellow);margin-top:6px;-webkit-text-stroke:0}
 .wrongmsg{text-align:center;font-size:1.3rem;margin-top:14px;text-shadow:0 2px 0 var(--ink)}
 .wrongmsg b{color:var(--yellow);font-family:'Lilita One';font-size:1.5rem}
 #toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:var(--yellow);color:var(--ink);border:3px solid var(--ink);box-shadow:0 4px 0 var(--ink);padding:12px 20px;border-radius:30px;opacity:0;transition:opacity .3s;pointer-events:none;max-width:90%;z-index:9;font-size:1.1rem}
@@ -93,6 +94,11 @@ textarea{width:100%;padding:12px;border:4px solid var(--ink);border-radius:14px;
 .stars{color:#f2b300;font-size:1rem;letter-spacing:1px;white-space:nowrap;-webkit-text-stroke:.5px var(--ink)}
 .x{border:0;background:none;color:#b8bce0;font-size:1.2rem;cursor:pointer}
 .muted{color:var(--muted)}
+.grid2{grid-template-columns:1fr 1fr}
+.opt.en{font-family:'Lilita One';font-size:1.5rem}
+.opt.gone{opacity:.25;pointer-events:none}
+.tbtn{display:flex;justify-content:space-between;align-items:center;font-size:1.25rem}
+.tbtn small{font-family:'Jua';font-size:1rem;color:var(--muted)}
 .chips{display:flex;gap:8px;overflow-x:auto;padding:6px 2px 8px;margin:6px 0 0;scrollbar-width:none}
 .chips::-webkit-scrollbar{display:none}
 .chip{flex:none;border:3px solid var(--ink);border-radius:14px;padding:6px 14px;background:rgba(255,255,255,.15);color:#fff;font-family:'Jua';font-size:1.05rem;cursor:pointer;box-shadow:0 3px 0 var(--ink)}
@@ -143,8 +149,8 @@ function cloudInit(){
 const KEY='wordquest_v1';
 const INTERVALS=[1,3,7,14,30];            // 복습 간격(일)
 const ROUNDS=['meaning','english','spell','blank','write','boss'];
-const TYPE_LEVEL={meaning:1,english:2,spell:3,blank:4,write:5};
-const LEVEL_NAME={1:'뜻 맞히기',2:'영어 찾기',3:'철자 조립',4:'빈칸 채우기',5:'직접 쓰기'};
+const TYPE_LEVEL={meaning:1,english:2,spell:3,blank:4,write:5,match:2,spot:4};
+const TYPE_NAME={meaning:'뜻 맞히기',english:'영어 찾기',spell:'철자 조립',blank:'빈칸 채우기',write:'직접 쓰기',match:'짝꿍 찾기',spot:'철자 탐정'};
 const ROUND_DESC={meaning:'영어를 보고 뜻을 골라요',english:'뜻을 보고 영어를 골라요',spell:'글자를 눌러 단어를 만들어요',blank:'비어 있는 글자를 채워요',write:'뜻을 보고 영어로 써요'};
 const SAMPLE=`pretend / ~인 척하다
 discover / 발견하다
@@ -167,9 +173,20 @@ island / 섬
 jungle / 정글
 kitchen / 부엌`;
 
+const PRAISE=['시온아! 굿!! 잘하고 있어~','오~ 정답! 역시 시온이야!','딱 맞았어! 멋지다 시온!','와! 이걸 맞히네? 대단해~','시온이 실력 어디 안 가지!','굿 잡! 이 기세로 쭉 가자~','정답! 머릿속에 단어가 쏙쏙~','오늘 시온이 컨디션 최고인데?','완벽해! 한 번에 딱!','시온아 너 천재 아니야?','나이스! 이 단어는 이제 시온이 거야~','정답이야! 트로피 하나 추가!','우와~ 눈 깜짝할 새에 맞혔어!','좋아 좋아! 계속 가보자~','짝짝짝! 시온이 최고!','이야~ 단어 박사 시온!','정확해! 한 글자도 안 틀렸어~','시온아, 지금 완전 잘하고 있어!','굿!! 보스도 시온이한텐 상대가 안 되겠다~','맞았어! 오늘도 한 단계 업!','와우~ 이 정도면 영어 선생님 해도 되겠어!','딩동댕! 정답입니다~','멋져! 시온이 머리 진짜 빨라~','정답! 엄마 아빠가 보면 깜짝 놀라겠다~','오케이! 이 단어 완전 정복!','역시~ 시온이는 믿고 보는 거야!','굿! 한 문제 한 문제가 다 별이 되는 중~','정답! 손이 저절로 움직였지?','좋았어! 다음 문제도 문제없지~','최고야 시온! 이대로 쭉~'];
+const CHEER=['아쉬워! 할 수 있어~ 힘내보자!','괜찮아 시온아, 다음엔 맞힐 거야!','아깝다! 조금만 더 집중해 볼까?','틀려도 괜찮아~ 그래야 더 오래 기억돼!','이 단어는 곧 다시 나올 거야, 준비하자!','아쉽! 정답 한 번만 소리 내서 읽어볼까?','다시 도전! 시온이는 포기 안 하지~','어이쿠~ 이번엔 살짝 미끄러졌네!','괜찮아! 틀린 단어가 진짜 내 단어가 되는 거야~','조금만 더! 거의 다 왔어~','힘내 시온! 한 번 틀린 건 아무것도 아니야~','아쉬워라~ 정답을 눈에 꼭 담아두자!','다음엔 꼭! 시온이라면 할 수 있어!','오~ 살짝 헷갈렸구나? 다시 보면 돼~','이런! 하지만 아직 배틀은 안 끝났어!','괜찮아~ 보스도 처음엔 다 틀렸대!','아쉽다! 이 단어 이름 다시 한 번 불러줘~','틀린 건 배우는 중이라는 뜻이야~ 잘하고 있어!','힘내자! 다음 문제에서 만회하면 돼~','앗! 정답 잘 봐두고 다시 가보자~','시온아 괜찮아, 천천히 해도 돼~','아쉬워! 그래도 도전한 게 멋져!','조금 어려웠지? 다음엔 더 쉬울 거야~','다시 한 번! 시온이는 강하니까~','괜찮아~ 이 단어는 오늘 친해지는 중이야!','아깝네! 거의 다 맞았어~','힘내! 틀릴수록 별이 더 단단해져~','앗 아쉬워~ 정답 소리 한 번 듣고 갈까?','괜찮아 괜찮아! 다음 문제 가보자~','시온아, 넘어져도 다시 일어나는 게 진짜 실력이야!'];
+const PERFECT=['100점!! 시온아 완벽해!!','전부 다 맞혔어! 오늘 시온이 무적이야~','와우!! 한 문제도 안 틀렸어! 챔피언!','퍼펙트! 트로피 다 쓸어 담았다~','시온이 오늘 진짜 대박! 100점!','올 클리어! 보스가 도망갔어~','완벽 그 자체! 엄마 아빠한테 자랑하자!','100점! 이건 기록으로 남겨야 해~','우와~ 전부 정답! 시온이 영어 천재!','만점!! 오늘 밤 꿈에서도 영어 나오겠다~','한 번에 올킬! 시온이는 전설이야~','100점! 단어들이 시온이한테 항복했어~','완벽해! 이 묶음은 이제 시온이 거야!','퍼펙트 게임! 박수 짝짝짝!!','전부 맞혔어! 오늘 저녁에 자랑할 일 생겼네~','만점이야! 시온이 손이 마법 손이네~','100점!! 다음 묶음도 이렇게 가자~','우승! 우승! 시온이가 챔피언!','하나도 안 틀렸어! 진짜 멋지다 시온!','퍼펙트!! 오늘 시온이 별이 반짝반짝~'];
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const fbHtml=(ok,en)=>ok?`<div class="good">${pick(PRAISE)}</div>`:`<div class="wrongmsg">정답은 <b>${esc(en)}</b><span class="cheer">${pick(CHEER)}</span></div>`;
+
 let S=load(), view='home';
 function migrate(s){
-  s.words=(s.words||[]).map(w=>({...w,group:w.group||'기본',mastery:w.mastery||0,box:w.box||0,due:w.due||null}));
+  s.words=(s.words||[]).map(w=>{
+    w={...w,group:w.group||'기본',mastery:w.mastery||0,box:w.box||0,due:w.due||null,form:w.form||''};
+    const bad=/^([a-z][a-z ]*?)\s*,\s*([^a-z].*)$/i.exec(w.ko||'');   // 예전 버그: 변화형이 뜻 앞에 붙은 경우
+    if(bad){w.form=w.form||bad[1].trim();w.ko=bad[2].trim();}
+    return w;
+  });
   s.sessions=s.sessions||[];s.group=s.group||'';s.cur=s.cur||null;
   if(s.cur){s.cur.queue=s.cur.queue||[];s.cur.wrong=s.cur.wrong||{};s.cur.bossWrong=s.cur.bossWrong||{};s.cur.wids=s.cur.wids||[];}
   return s;
@@ -203,20 +220,28 @@ function ask(msg,onYes){
 }
 
 // ── 단어 입력 ─────────────────────────────────────────
+// 한 줄 = 영어부분 + 뜻부분. 구분은 탭 / : | 또는 첫 한글 앞. 영어부분 안의 "pretend - pretended"는 변화형으로 따로 저장.
 function parseWords(text){
   const out=[];
   text.split(/\r?\n/).forEach(line=>{
-    const p=line.split(/\t|\s*[\/,:|]\s*|\s+-\s+/).map(s=>s.trim()).filter(Boolean);
-    if(p.length>=2&&/[a-zA-Z]/.test(p[0]))out.push({en:p[0].toLowerCase(),ko:p.slice(1).join(', ')});
+    line=line.trim();if(!line)return;
+    const m=line.split(/\t|\s*[\/|:]\s*/).map(x=>x.trim()).filter(Boolean);
+    let enPart,koPart;
+    if(m.length>=2){enPart=m[0];koPart=m.slice(1).join(', ');}
+    else{const i=line.search(/[가-힣~]/);if(i<=0)return;enPart=line.slice(0,i);koPart=line.slice(i);}
+    const forms=enPart.split(/\s*[-–,]\s*|\s{2,}/).map(x=>x.trim().toLowerCase()).filter(x=>/^[a-z][a-z' ]*$/.test(x));
+    const en=forms[0];if(!en||!/[a-z]/.test(en))return;
+    koPart=koPart.replace(/^[-–,\s]+/,'').trim();if(!koPart)return;
+    out.push({en,form:forms.slice(1).join(', '),ko:koPart});
   });
   return out;
 }
 function addWords(list,group){
   let n=0;group=(group||'').trim()||'기본';
-  list.forEach(({en,ko})=>{
+  list.forEach(({en,ko,form})=>{
     const ex=S.words.find(w=>w.en===en);
-    if(ex){ex.ko=ko;ex.group=group;return;}
-    S.words.push({id:uid(),en,ko,group,mastery:0,box:0,due:null,miss:null,lastMiss:null});n++;
+    if(ex){ex.ko=ko;ex.form=form||'';ex.group=group;return;}
+    S.words.push({id:uid(),en,ko,form:form||'',group,mastery:0,box:0,due:null,miss:null,lastMiss:null});n++;
   });
   save();return n;
 }
@@ -243,10 +268,16 @@ function startSession(){
   S.cur={date:today(),wids,round:0,queue:[],idx:0,wrong:{},bossWrong:{},exits:0,seconds:0,tick:Date.now()};
   buildRound();save();showPreview();
 }
+function startTest(g){
+  const ws=g?S.words.filter(w=>w.group===g):S.words;
+  if(ws.length<4)return;
+  S.cur={date:today(),wids:shuffle(ws).map(w=>w.id),round:ROUNDS.length-1,queue:[],idx:0,wrong:{},bossWrong:{},exits:0,seconds:0,tick:Date.now(),test:g||'전체'};
+  buildRound();save();showRoundIntro();
+}
 function resumeSession(){S.cur.tick=Date.now();save();if(S.cur.idx===0)showRoundIntro();else showItem();}
 function bossType(w){
   const m=w.mastery;
-  const pool=m>=4?['write','blank','spell']:m>=2?['blank','spell','english']:['meaning','english','spell'];
+  const pool=m>=4?['write','blank','spell','spot']:m>=2?['blank','spell','english','spot','match']:['meaning','english','spell','match'];
   return pool[Math.floor(Math.random()*pool.length)];
 }
 function buildRound(){
@@ -283,7 +314,7 @@ function finish(){
     else{retry.push(id);w.box=0;w.due=addDays(t,1);}
     if(wrong>0)w.mastery=Math.max(0,w.mastery-1);
   });
-  const rec={date:t,wids:c.wids,conquered,retry,seconds:Math.round(c.seconds),exits:c.exits};
+  const rec={date:t,wids:c.wids,conquered,retry,seconds:Math.round(c.seconds),exits:c.exits,test:c.test||null};
   S.sessions.push(rec);S.cur=null;save();
   if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});
   showResult(rec);
@@ -301,7 +332,7 @@ window.addEventListener('beforeunload',e=>{if(S.cur&&view==='game'){e.preventDef
 // ── 화면 ─────────────────────────────────────────────
 function showHome(){
   view='home';
-  const t=today(),doneToday=S.sessions.filter(s=>s.date===t).length;
+  const t=today(),doneToday=S.sessions.filter(s=>s.date===t&&!s.test).length;
   const plan=pickToday(),nNew=plan.filter(id=>!W(id).due).length;
   const conquered=S.words.filter(w=>w.mastery>=5).length;
   const trophies=S.words.reduce((a,w)=>a+w.mastery,0);
@@ -310,7 +341,7 @@ function showHome(){
   const gs=groups();
   if(S.group&&!gs.includes(S.group))S.group='';
   render(`
-    <h1>WORD<br>QUEST<small>단어 모험</small></h1>
+    <h1>BRAWL<br>ENGLISH<small>브롤잉글리쉬</small></h1>
     ${gs.length>1?`<div class="chips"><button class="chip ${S.group?'':'on'}" onclick="setGroup('')">전체 복습</button>${gs.map(g=>`<button class="chip ${S.group===g?'on':''}" data-g="${esc(g)}">${esc(g)}</button>`).join('')}</div>`:''}
     ${S.words.length>=4&&pool().length<4?`<div class="card">이 묶음에는 단어가 ${pool().length}개뿐이에요.<br>4개 이상 있어야 배틀할 수 있어요.</div>`:S.words.length>=4?`
       <div class="card tilt"><div class="lbl">오늘의 배틀 · ${esc(S.group||'전체')}</div><div class="big">${plan.length}<span style="font-size:1.4rem"> 단어</span></div><div class="sub">새 단어 ${nNew} · 복습 ${plan.length-nNew}</div></div>
@@ -322,15 +353,18 @@ function showHome(){
     ${resume?`<button class="btn primary" onclick="resumeSession()">이어하기 ▶</button>`
      :plan.length?`<button class="btn primary" onclick="startSession()">${doneToday?'한 번 더!':'배틀 시작!'}</button>`:''}
     ${doneToday?`<div class="sub">오늘 배틀 완료 ✔ (${doneToday}회)</div>`:''}
+    ${S.words.length>=4?`<h2>🧪 묶음별 테스트 <span style="font-size:.9rem;color:rgba(255,255,255,.7)">묶음 단어 전부 복습 퀴즈</span></h2>
+      ${(gs.length>1?['']:[]).concat(gs).map(g=>{const n=(g?S.words.filter(w=>w.group===g):S.words).length;return n>=4?`<button class="btn tbtn" data-t="${esc(g)}"><span>${g?esc(g):'전체'}</span><small>${n}단어 ▶</small></button>`:'';}).join('')}`:''}
     <button class="btn link" onclick="showGate()">부모님 화면${famRef?' · ☁️ '+esc(famCode()):''}</button>`);
   app.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>setGroup(b.dataset.g));
+  app.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>startTest(b.dataset.t));
 }
 function showPreview(){
   view='game';
   const c=S.cur;
   render(`<div class="top"><span class="badge">오늘의 단어</span><span>${esc(S.group||'전체')}</span><span>${c.wids.length}개</span></div>
     <div class="sub">단어를 누르면 소리가 나요</div>
-    ${c.wids.map(id=>{const w=W(id);return `<div class="wl" data-say="${esc(w.en)}"><span><b>${esc(w.en)}</b> <span class="muted">${esc(w.ko)}</span></span><span class="stars">${stars(w.mastery)}</span></div>`;}).join('')}
+    ${c.wids.map(id=>{const w=W(id);return `<div class="wl" data-say="${esc(w.en)}"><span><b>${esc(w.en)}</b>${w.form?` <small class="muted en">- ${esc(w.form)}</small>`:''} <span class="muted">${esc(w.ko)}</span></span><span class="stars">${stars(w.mastery)}</span></div>`;}).join('')}
     <button class="btn primary" onclick="goFull();showRoundIntro()">전체화면으로 GO! ⛶</button>
     <button class="btn ghost" onclick="showRoundIntro()">그냥 시작</button>`);
 }
@@ -338,14 +372,14 @@ function showRoundIntro(){
   view='game';
   const c=S.cur,type=ROUNDS[c.round],boss=type==='boss';
   render(`
-    <h1>${boss?'BOSS<br>BATTLE':'ROUND '+(c.round+1)}<small>${boss?'👑 오늘 배운 단어 총정리':LEVEL_NAME[TYPE_LEVEL[type]]}</small></h1>
+    <h1>${c.test?'TEST':boss?'BOSS<br>BATTLE':'ROUND '+(c.round+1)}<small>${c.test?'🧪 '+esc(c.test)+' · '+c.wids.length+'단어 전체 복습':boss?'👑 오늘 배운 단어 총정리':TYPE_NAME[type]}</small></h1>
     <div class="card tilt"><div style="font-size:1.3rem">${boss?'여러 가지 방식으로 섞어서 나와요':ROUND_DESC[type]}</div></div>
     <button class="btn primary" onclick="showItem()">GO!</button>`);
 }
 function showItem(){
   view='game';
   const c=S.cur,it=c.queue[c.idx],w=W(it.wid),total=c.queue.length;
-  render(`<div class="top"><span class="badge">${it.boss?'👑 BOSS':'ROUND '+(c.round+1)}</span><span>${LEVEL_NAME[TYPE_LEVEL[it.type]]}</span><span>${c.idx+1}/${total} <button class="ico" onclick="goFull()" title="전체화면">⛶</button></span></div>
+  render(`<div class="top"><span class="badge">${c.test?'🧪 TEST':it.boss?'👑 BOSS':'ROUND '+(c.round+1)}</span><span>${TYPE_NAME[it.type]}</span><span>${c.idx+1}/${total} <button class="ico" onclick="goFull()" title="전체화면">⛶</button></span></div>
     <div class="bar"><i style="width:${c.idx/total*100}%"></i></div><div id="g"></div>`);
   GAMES[it.type](w,it);
 }
@@ -354,7 +388,8 @@ function showResult(rec){
   const hard=rec.retry.map(W).filter(Boolean);
   const win=rec.retry.length===0;
   render(`
-    <h1>${win?'VICTORY!':'GOOD<br>FIGHT!'}<small>${win?'🏆 오늘 배틀 완전 승리!':'💪 잘 싸웠어요'}</small></h1>
+    <h1>${win?'VICTORY!':'GOOD<br>FIGHT!'}<small>${rec.test?'🧪 '+esc(rec.test)+' 테스트 끝!':win?'🏆 오늘 배틀 완전 승리!':'💪 잘 싸웠어요'}</small></h1>
+    <div class="card tilt2" style="font-size:1.35rem;color:${win?'var(--green-d)':'var(--ink)'}">${win?pick(PERFECT):pick(CHEER)}</div>
     <div class="card tilt"><div class="row" style="justify-content:space-around">
       <div><div class="lbl">단어</div><div class="big">${rec.wids.length}</div></div>
       <div><div class="lbl">정복</div><div class="big" style="color:var(--green)">${rec.conquered.length}</div></div>
@@ -370,28 +405,29 @@ function optionsFor(w,key){
   const others=shuffle(S.words.filter(x=>x.id!==w.id&&x[key]!==w[key])).slice(0,3);
   return shuffle([w,...others]);
 }
-function bindOpts(rightId,sayOnOk){
+function bindOpts(attr,rightVal,sayOnOk,rightEn){
   let done=false;
   app.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
     if(done)return;done=true;
-    const ok=b.dataset.id===rightId;
-    app.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x.dataset.id===rightId)x.classList.add('ok');});
+    const ok=b.dataset[attr]===rightVal;
+    app.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x.dataset[attr]===rightVal)x.classList.add('ok');});
     if(!ok)b.classList.add('bad');
     if(sayOnOk)speak(sayOnOk);
-    setTimeout(()=>answer(ok),ok?700:1500);
+    const fb=$('#fb');if(fb)fb.innerHTML=fbHtml(ok,rightEn||sayOnOk||'');
+    setTimeout(()=>answer(ok),ok?1000:1900);
   });
 }
 GAMES.meaning=w=>{
   const opts=optionsFor(w,'ko');
   $('#g').innerHTML=`<div class="prompt"><div class="word">${esc(w.en)}</div><button class="spk" data-say="${esc(w.en)}">🔊</button></div>
-    <div class="opts">${opts.map(o=>`<button class="opt" data-id="${o.id}">${esc(o.ko)}</button>`).join('')}</div>`;
-  speak(w.en);bindOpts(w.id);
+    <div class="opts">${opts.map(o=>`<button class="opt" data-id="${o.id}">${esc(o.ko)}</button>`).join('')}</div><div id="fb"></div>`;
+  speak(w.en);bindOpts('id',w.id,null,w.ko);
 };
 GAMES.english=w=>{
   const opts=optionsFor(w,'en');
   $('#g').innerHTML=`<div class="prompt"><div class="ko">${esc(w.ko)}</div></div>
-    <div class="opts">${opts.map(o=>`<button class="opt en" data-id="${o.id}">${esc(o.en)}</button>`).join('')}</div>`;
-  bindOpts(w.id,w.en);
+    <div class="opts">${opts.map(o=>`<button class="opt en" data-id="${o.id}">${esc(o.en)}</button>`).join('')}</div><div id="fb"></div>`;
+  bindOpts('id',w.id,w.en);
 };
 function tileGame(w,open,bankChars){
   const chars=w.en.split('');
@@ -413,9 +449,9 @@ function tileGame(w,open,bankChars){
   };
   const check=()=>{
     const ok=open.every(p=>fill[p].ch===chars[p]);done=true;draw(ok?'ok':'bad');
-    $('#fb').innerHTML=ok?'<div class="good">PERFECT!</div>':`<div class="wrongmsg">정답은 <b>${esc(w.en)}</b></div>`;
+    $('#fb').innerHTML=fbHtml(ok,w.en);
     if(ok)speak(w.en);
-    setTimeout(()=>answer(ok),ok?800:1800);
+    setTimeout(()=>answer(ok),ok?1000:2000);
   };
   draw();
 }
@@ -460,13 +496,64 @@ GAMES.write=w=>{
     const v=$('#inp').value.trim().toLowerCase();if(!v)return;
     if(v===w.en){
       done=true;speak(w.en);
-      $('#fb').innerHTML=tries===0?'<div class="good">PERFECT!</div>':'<div class="good" style="font-size:1.3rem;font-family:Jua">힌트로 맞혔어요! 다시 한 번 나올 거예요</div>';
-      setTimeout(()=>answer(tries===0),tries===0?800:1500);return;
+      $('#fb').innerHTML=tries===0?fbHtml(true):'<div class="good">힌트로 맞혔어요! 다시 한 번 나올 거예요</div>';
+      setTimeout(()=>answer(tries===0),tries===0?1000:1500);return;
     }
     tries++;recordMiss(w,v);
     if(tries===1)draw('힌트: '+esc(hint1));
     else if(tries===2)draw('힌트: '+esc(hint2));
-    else{done=true;speak(w.en);$('#fb').innerHTML=`<div class="wrongmsg">정답은 <b>${esc(w.en)}</b></div>`;setTimeout(()=>answer(false),2000);}
+    else{done=true;speak(w.en);$('#fb').innerHTML=fbHtml(false,w.en);setTimeout(()=>answer(false),2200);}
+  };
+  draw();
+};
+
+// 철자 탐정: 진짜 철자 하나 + 그럴듯한 오타들
+const rnd=n=>Math.floor(Math.random()*n);
+function misspell(en){
+  const v='aeiou';
+  const ops=[
+    s=>{const i=rnd(s.length-1);return s[i]===s[i+1]?null:s.slice(0,i)+s[i+1]+s[i]+s.slice(i+2);},
+    s=>{const idx=[...s].map((c,i)=>v.includes(c)?i:-1).filter(i=>i>=0);if(!idx.length)return null;const i=idx[rnd(idx.length)];const alt=v.replace(s[i],'');return s.slice(0,i)+alt[rnd(alt.length)]+s.slice(i+1);},
+    s=>{const i=1+rnd(s.length-1);return s.slice(0,i)+s.slice(i+1);},
+    s=>{const i=1+rnd(s.length-1);return s.slice(0,i)+s[i]+s.slice(i);}
+  ];
+  return ops[rnd(ops.length)](en);
+}
+function decoys(w,n){
+  const set=new Set();
+  if(w.lastMiss&&w.lastMiss!==w.en)set.add(w.lastMiss);
+  let guard=0;
+  while(set.size<n&&guard++<60){const f=misspell(w.en);if(f&&f!==w.en&&f.length>1)set.add(f);}
+  const others=shuffle(S.words.filter(x=>x.en!==w.en)).map(x=>x.en);
+  for(const o of others){if(set.size>=n)break;set.add(o);}
+  return [...set].slice(0,n);
+}
+GAMES.spot=w=>{
+  const opts=shuffle([w.en,...decoys(w,3)]);
+  $('#g').innerHTML=`<div class="prompt"><div class="lbl" style="color:rgba(255,255,255,.8)">🕵️ 진짜 철자는 딱 하나!</div><div class="ko">${esc(w.ko)}</div></div>
+    <div class="opts">${opts.map(o=>`<button class="opt en" data-v="${esc(o)}">${esc(o)}</button>`).join('')}</div><div id="fb"></div>`;
+  bindOpts('v',w.en,w.en);
+};
+// 짝꿍 찾기: 영어 4개를 두고 뜻이 하나씩 나오면 짝을 찾기
+GAMES.match=w=>{
+  const others=shuffle(S.words.filter(x=>x.id!==w.id&&x.en!==w.en&&x.ko!==w.ko)).slice(0,3);
+  const set=shuffle([w,...others]),order=shuffle(set),found=new Set();
+  let i=0,wrongOnW=false,done=false;
+  const draw=()=>{
+    const cur=order[i],g=$('#g');
+    g.innerHTML=`<div class="prompt"><div class="lbl" style="color:rgba(255,255,255,.8)">🤝 짝꿍 찾기 ${i+1}/${order.length}</div><div class="ko">${esc(cur.ko)}</div></div>
+      <div class="opts grid2">${set.map(o=>`<button class="opt en ${found.has(o.id)?'gone':''}" data-id="${o.id}">${esc(o.en)}</button>`).join('')}</div>`;
+    g.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+      if(done)return;
+      if(b.dataset.id===cur.id){
+        found.add(cur.id);b.classList.add('ok');speak(cur.en);i++;
+        if(i>=order.length){done=true;$('#g').insertAdjacentHTML('beforeend',wrongOnW?`<div class="wrongmsg"><span class="cheer">${pick(CHEER)}</span></div>`:fbHtml(true));setTimeout(()=>answer(!wrongOnW),1000);}
+        else setTimeout(draw,450);
+      }else{
+        b.classList.add('bad');if(cur.id===w.id)wrongOnW=true;
+        setTimeout(()=>b.classList.remove('bad'),450);
+      }
+    });
   };
   draw();
 };
@@ -500,12 +587,12 @@ function showParent(){
     <h2>단어 넣기</h2>
     <input id="wg" class="inp" list="glist" style="font-family:Jua;font-size:1.1rem;text-align:left;margin:0 0 10px" placeholder="묶음 이름 (예: 양치기 소년)  비우면 '기본'">
     <datalist id="glist">${groups().map(g=>`<option value="${esc(g)}">`).join('')}</datalist>
-    <textarea id="wt" rows="6" placeholder="한 줄에 하나씩  (영어 / 뜻)&#10;pretend / ~인 척하다&#10;discover / 발견하다&#10;&#10;엑셀에서 두 칸 복사해 붙여넣어도 돼요"></textarea>
+    <textarea id="wt" rows="6" placeholder="한 줄에 하나씩  (영어 / 뜻)&#10;pretend / ~인 척하다&#10;pretend - pretended / ~인 척하다  ← 변화형도 OK&#10;discover / 발견하다&#10;엑셀에서 두 칸 복사해 붙여넣어도 돼요"></textarea>
     <div class="row"><button class="btn blue" id="addw">추가</button><button class="btn ghost" id="sample">예시 단어 20개 넣기</button></div>
     <h2>단어 목록 (${S.words.length}개)</h2>
     <div class="panel">${S.words.length?`<table><tr><th>영어</th><th>뜻</th><th>숙련도</th><th>복습</th><th></th></tr>
       ${groups().map(g=>{const ws=S.words.filter(w=>w.group===g);return `<tr class="grp"><td colspan="4"><b>📚 ${esc(g)}</b> <span class="muted">${ws.length}개</span></td><td><button class="x" data-delg="${esc(g)}" title="묶음 지우기">✕</button></td></tr>`+
-        ws.map(w=>`<tr><td><b class="en">${esc(w.en)}</b></td><td>${esc(w.ko)}</td><td class="stars">${stars(w.mastery)}</td><td class="muted">${w.due?(w.due<=t?'오늘':w.due.slice(5)):'-'}</td><td><button class="x" data-del="${w.id}">✕</button></td></tr>`).join('');}).join('')}</table>`:'<div class="muted" style="padding:8px">아직 없어요</div>'}</div>
+        ws.map(w=>`<tr><td><b class="en">${esc(w.en)}</b>${w.form?`<div class="muted" style="font-size:.8rem">- ${esc(w.form)}</div>`:''}</td><td>${esc(w.ko)}</td><td class="stars">${stars(w.mastery)}</td><td class="muted">${w.due?(w.due<=t?'오늘':w.due.slice(5)):'-'}</td><td><button class="x" data-del="${w.id}">✕</button></td></tr>`).join('');}).join('')}</table>`:'<div class="muted" style="padding:8px">아직 없어요</div>'}</div>
     <h2>학습 기록</h2>
     <div class="panel list">${sessions.length?sessions.map(s=>`<div><b>${s.date}</b> · 정복 ${s.conquered.length}/${s.wids.length} · ${Math.round(s.seconds/60)}분 · 화면 이탈 ${s.exits}회</div>`).join(''):'<div class="muted">아직 없어요</div>'}</div>
     <h2>내일까지 복습 예정 (${due.length}개)</h2>
