@@ -828,7 +828,7 @@ GAMES.match=w=>{
 const SHOP=[
  {id:'skin_gold',t:'skin',n:'골드 가운',e:'🥼',p:10,d:'반짝이는 황금 가운'},{id:'skin_ninja',t:'skin',n:'닌자 시온',e:'🥷',p:8,d:'검은 닌자복'},
  {id:'skin_space',t:'skin',n:'우주 시온',e:'👨‍🚀',p:12,d:'은빛 우주복'},{id:'skin_dragon',t:'skin',n:'드래곤 슈트',e:'🐉',p:20,d:'붉은 드래곤 갑옷'},
- {id:'wpn_shot',t:'wpn',n:'연필 샷건',e:'🔫',p:8,d:'3발 부채꼴 · 가까이서 강해요'},{id:'wpn_beaker',t:'wpn',n:'비커 러너',e:'🧪',p:6,d:'한 발이 세고 장전이 빨라요'},
+ {id:'wpn_shot',t:'wpn',n:'연필 샷건',e:'🔫',p:8,d:'3발 부채꼴 · 드디어 원거리!'},{id:'wpn_beaker',t:'wpn',n:'비커 러너',e:'🧪',p:6,d:'첫 총으로 딱 · 한 발이 세요'},
  {id:'wpn_bolt',t:'wpn',n:'번개 관통',e:'⚡',p:10,d:'적을 뚫고 지나가요 · 사거리 최고'},{id:'wpn_rocket',t:'wpn',n:'로켓 연필',e:'🚀',p:14,d:'느리지만 터지면 주변까지 피해'},
  {id:'sup_bomb',t:'sup',n:'폭탄 대포',e:'💥',p:8,d:'큰 폭탄 · 넓게 120 피해'},{id:'sup_laser',t:'sup',n:'레이저 대포',e:'🔦',p:12,d:'일직선 관통 95 피해'},
  {id:'sup_heal',t:'sup',n:'회복 파동',e:'💚',p:10,d:'체력 70 회복 + 주변 적 느리게'},{id:'sup_storm',t:'sup',n:'연필 폭풍',e:'🌪️',p:15,d:'사방으로 연필 12발'},
@@ -842,7 +842,7 @@ function drawPix(ctx,x,y,sc,skin){const pal={...PAL.base,...(PAL[skin]||{})};PIX
 function showShop(){
   view='shop';
   const p=S.prof;p.items=p.items||{};
-  const kinds={skin:'👕 스킨',wpn:'🔫 총 (기본: 연필)',sup:'💣 대포 (기본: 작은 폭탄)',buff:'💪 능력'};
+  const kinds={skin:'👕 스킨',wpn:'🔫 총 (기본은 연필로 때리기 · 총을 사야 멀리서 쏴요)',sup:'💣 대포 (기본: 작은 폭탄)',buff:'💪 능력'};
   render(`<div class="top"><button class="ico" onclick="showHome()">🏠 홈</button><span class="badge">🛒 알파 상점</span><span>🔺${p.alpha}</span></div>
     <div class="card" style="padding:12px 18px;display:flex;gap:14px;align-items:center;text-align:left"><div id="av"></div><div><div style="font-size:1.2rem">시온 헌터</div><div class="lbl">알파로 아이템을 사요. 한 번 사면 영원히 내 것!</div></div></div>
     ${Object.keys(kinds).map(k=>`<h2>${kinds[k]}</h2>${SHOP.filter(i=>i.t===k).map(i=>{const own=has(i.id),eq=(i.t==='skin'&&p.skin===i.id)||(i.t==='wpn'&&p.wpn===i.id)||(i.t==='sup'&&p.sup===i.id);
@@ -856,16 +856,16 @@ function showShop(){
 }
 
 // ── 브롤헌터스 3D: Three.js 아레나, 양손 조이스틱, AI 봇, 총·대포 ─────────
-const WEAPONS={basic:{n:'기본 연필',e:'✏️',dmg:24,spd:22,range:9,ammo:3,reload:1.3,count:1,spread:0,col:0x7ed957,r:.18},
+const WEAPONS={basic:{n:'연필 휘두르기',e:'✏️',dmg:34,spd:18,range:2.3,ammo:3,reload:.9,count:1,spread:0,col:0x7ed957,r:.24},   // 기본은 근접! 총은 알파로
  wpn_shot:{n:'연필 샷건',e:'🔫',dmg:15,spd:20,range:6.5,ammo:3,reload:1.5,count:3,spread:.25,col:0xffb347,r:.16},
  wpn_beaker:{n:'비커 러너',e:'🧪',dmg:34,spd:26,range:10,ammo:3,reload:1.1,count:1,spread:0,col:0x2ecc71,r:.22},
  wpn_bolt:{n:'번개 관통',e:'⚡',dmg:28,spd:32,range:12.5,ammo:2,reload:1.7,count:1,spread:0,pierce:true,col:0xffd23f,r:.2},
  wpn_rocket:{n:'로켓 연필',e:'🚀',dmg:45,spd:16,range:11,ammo:2,reload:2.2,count:1,spread:0,aoe:1.6,col:0xff4d4d,r:.26}};
 const SUPERS={basic:{n:'작은 폭탄',e:'💣',kind:'bomb',r:3,dmg:70},sup_bomb:{n:'폭탄 대포',e:'💥',kind:'bomb',r:4.5,dmg:120},
  sup_laser:{n:'레이저 대포',e:'🔦',kind:'laser',dmg:95},sup_heal:{n:'회복 파동',e:'💚',kind:'heal',heal:70,r:5},sup_storm:{n:'연필 폭풍',e:'🌪️',kind:'storm',dmg:26,count:12}};
-const DIFF={easy:{n:'쉬움',e:'🙂',bots:3,hp:90,dmg:11,acc:.5,rate:1.7,sp:4,alpha:0,d:'봇 3명 · 느리고 잘 못 맞혀요'},
- normal:{n:'보통',e:'😎',bots:4,hp:130,dmg:16,acc:.7,rate:1.2,sp:5,alpha:0,d:'봇 4명 · 제법 쏴요'},
- hard:{n:'어려움',e:'🔥',bots:6,hp:170,dmg:23,acc:.88,rate:.85,sp:5.8,alpha:1,d:'봇 6명 · 살아남으면 🔺1 (하루 1번)'}};
+const DIFF={easy:{n:'쉬움',e:'🙂',bots:4,hp:110,dmg:14,acc:.62,rate:1.4,sp:4.6,alpha:0,d:'봇 4명 · 그래도 만만치 않아요'},
+ normal:{n:'보통',e:'😎',bots:5,hp:150,dmg:19,acc:.78,rate:1.05,sp:5.4,alpha:0,d:'봇 5명 · 제대로 쏴요'},
+ hard:{n:'어려움',e:'🔥',bots:7,hp:200,dmg:26,acc:.92,rate:.75,sp:6.2,alpha:1,d:'봇 7명 · 살아남으면 🔺1 (하루 1번)'}};
 const SKIN3={base:{coat:0xf4f4f4,shirt:0x2ecc71,hair:0x1a1a1a},skin_gold:{coat:0xffd23f,shirt:0xff8a1f,hair:0x1a1a1a},skin_ninja:{coat:0x23232b,shirt:0x444444,hair:0x111111},skin_space:{coat:0xc8d6e5,shirt:0x6c8cff,hair:0xdfe6ee},skin_dragon:{coat:0xe74c3c,shirt:0x2ecc71,hair:0x27ae60}};
 function huntState(){const t=today();if(!S.hunt||S.hunt.date!==t)S.hunt={date:t,plays:0,tickets:0,perfect:'',hardWin:''};return S.hunt;}
 function huntPlaysLeft(){const h=huntState();return (h.plays===0?1:0)+h.tickets;}
@@ -951,9 +951,9 @@ function showHuntSetup(g){
   view='home';const w=curWeapon(),sp=curSuper();
   render(`<div class="top"><button class="ico" onclick="showHome()">🏠 홈</button><span class="badge">🎮 브롤헌터스</span><span>남은 ${huntPlaysLeft()}판</span></div>
     <h1 style="font-size:2.2rem">BRAWL<br>HUNTERS<small>난이도를 골라요</small></h1>
-    <div class="card" style="text-align:left;padding:10px 16px;display:flex;gap:12px;align-items:center"><div id="av"></div><div><div>${w.e} ${w.n} · ${sp.e} ${sp.n}</div><div class="lbl">총·대포는 🛒 알파 상점에서 바꿔요</div></div></div>
+    <div class="card" style="text-align:left;padding:10px 16px;display:flex;gap:12px;align-items:center"><div id="av"></div><div><div>${w.e} ${w.n} · ${sp.e} ${sp.n}</div><div class="lbl">기본은 연필로 때리기(가까이 가야 해요). 총·대포는 🛒 알파 상점에서!</div></div></div>
     ${Object.keys(DIFF).map(k=>`<button class="btn ${k==='hard'?'danger':k==='normal'?'blue':''}" data-d="${k}" style="display:flex;justify-content:space-between;align-items:center"><span>${DIFF[k].e} ${DIFF[k].n}</span><small style="font-size:.9rem;-webkit-text-stroke:0">${DIFF[k].d}</small></button>`).join('')}
-    <div class="sub" style="font-size:.9rem">게임은 전체화면·가로로 열려요 (기기를 가로로 잡으세요)<br>태블릿: 왼쪽 아무 데나 대고 끌기 = 이동 · 오른쪽 끌기 = 조준, 놓으면 발사 · 탭 = 자동 조준<br>PC: 화살표 = 이동 · 스페이스 = 발사 · 엔터 = 대포</div>`);
+    <div class="sub" style="font-size:.9rem">게임은 전체화면·가로로 열려요 (기기를 가로로 잡으세요)<br>태블릿: 왼쪽 아무 데나 대고 끌기 = 이동 · 오른쪽 탭 = 보는 방향으로 공격 · 오른쪽 끌기 = 조준해서 공격<br>PC: 화살표 = 이동 · 스페이스 = 공격 · 엔터 = 대포</div>`);
   $('#av').appendChild(avatarCanvas());
   app.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>startHunt(g,b.dataset.d));
 }
@@ -1049,7 +1049,7 @@ function shoot(from,ang,W,owner,dmgMul){
     m.position.set(from.x,.9,from.z);m.rotation.y=a;G.sc.add(m);
     G.pr.push({m,x:from.x,z:from.z,vx:Math.sin(a)*W.spd,vz:Math.cos(a)*W.spd,dist:0,range:W.range,dmg:W.dmg*(dmgMul||1),owner,pierce:W.pierce,aoe:W.aoe,hit:new Set()});}
 }
-function fireAuto(){const p=G.pl;if(p.dead)return;const t=G.bots.filter(b=>!b.dead).map(b=>({b,d:Math.hypot(b.x-p.x,b.z-p.z)})).sort((a,b)=>a.d-b.d)[0];if(t&&t.d<G.W.range+2)fireDir(Math.atan2(t.b.x-p.x,t.b.z-p.z));else fireDir(p.face);}
+function fireAuto(){const p=G.pl;if(p.dead)return;fireDir(p.face);}   // 자동 조준 없음: 보고 있는(움직이는) 방향으로
 function fireDir(ang){const p=G.pl;if(p.dead||G.paused)return;if(p.ammo<1){huntMsg('🔫 장전 중…',500);return;}p.ammo--;p.face=ang;p.m.rotation.y=ang;shoot(p,ang,G.W,'p',G.t<G.critUntil?2:1);puff(p.x+Math.sin(ang)*1.1,p.z+Math.cos(ang)*1.1,G.W.col,3);Music.sfx(true);}
 function useSuper(){const g=G;if(!g)return;const p=g.pl;if(p.dead||g.paused||g.sup<100)return;g.sup=0;const SP=g.SP,a=p.face;burst(30);
   if(SP.kind==='bomb'){const bx=p.x+Math.sin(a)*4,bz=p.z+Math.cos(a)*4;g.fx.push({kind:'bomb',x:bx,z:bz,t:.55,r:SP.r,dmg:SP.dmg});huntMsg('💣 대포 발사!');}
