@@ -1240,10 +1240,10 @@ function showGate(){
   if(isParent()){showParent();return;}
   view='gate';
   render(`<div class="top"><button class="ico" onclick="showHome()">← 홈</button><span>부모님 확인</span><span></span></div>
-    <div class="card tilt" style="margin-top:40px"><div class="lbl">부모님만 들어올 수 있어요</div><div class="big" style="font-size:2.4rem">12 × 12 = ?</div>
-    <input id="pin" class="inp" inputmode="numeric" placeholder="답을 쓰세요"><button class="btn blue" id="pin-ok">들어가기</button></div>`);
+    <div class="card tilt" style="margin-top:40px"><div class="lbl">부모님만 들어올 수 있어요</div><div class="big" style="font-size:2rem">🔒 비밀번호</div>
+    <input id="pin" class="inp" type="password" style="font-family:Jua;font-size:1.3rem" placeholder="비밀번호"><button class="btn blue" id="pin-ok">들어가기</button></div>`);
   const i=$('#pin');i.focus();
-  const go=()=>{if(i.value.trim()==='144')showParent();else{toast('다시 생각해 보세요');i.value='';i.focus();}};
+  const go=()=>{if(i.value===RESET_PW)showParent();else{toast('비밀번호가 달라요');i.value='';i.focus();}};
   $('#pin-ok').onclick=go;i.onkeydown=e=>{if(e.key==='Enter')go();};
 }
 function showParent(){
