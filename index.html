@@ -119,6 +119,7 @@ const FIREBASE={
   appId:"1:959039559463:web:af3921ee1a42fd163cfb02"
 };
 const FAM_KEY='wq_fam';
+const RESET_PW='sion';   // 전체 초기화 비밀번호
 let famRef=null,pushT=null;
 const strip=o=>JSON.parse(JSON.stringify(o,(k,v)=>v===null?undefined:v)); // Firebase는 null을 지우므로 비교용
 function famCode(){return localStorage.getItem(FAM_KEY)||'';}
@@ -516,7 +517,13 @@ function showParent(){
   $('#sample').onclick=()=>{const n=addWords(parseWords(SAMPLE),$('#wg').value||'예시');toast(n+'개 추가했어요');showParent();};
   app.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{const w=W(b.dataset.del);ask(`"${esc(w.en)}" 지울까요?`,()=>{S.words=S.words.filter(x=>x.id!==w.id);save();showParent();});});
   app.querySelectorAll('[data-delg]').forEach(b=>b.onclick=()=>{const g=b.dataset.delg;ask(`"${esc(g)}" 묶음 전체를 지울까요?`,()=>{S.words=S.words.filter(x=>x.group!==g);save();showParent();});});
-  $('#reset').onclick=()=>ask('단어와 기록을 모두 지울까요?',()=>{S={words:[],sessions:[],cur:null,group:''};save();showParent();});
+  $('#reset').onclick=()=>{
+    ask('단어와 기록을 모두 지울까요?<br><input id="rpw" class="inp" type="password" style="font-size:1.2rem;font-family:Jua" placeholder="초기화 비밀번호">',()=>{
+      if($('#rpw').value!==RESET_PW){toast('비밀번호가 달라요');return;}
+      S={words:[],sessions:[],cur:null,group:''};save();showParent();toast('모두 지웠어요');
+    });
+    $('#rpw').focus();
+  };
   const on=(id,fn)=>{const el=$('#'+id);if(el)el.onclick=fn;};
   on('mkfam',()=>joinFam(newFamCode()));
   on('joinfam',()=>{const v=$('#famin').value.trim();if(v.length===6)joinFam(v);else toast('코드 6자리를 넣어주세요');});
