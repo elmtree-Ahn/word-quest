@@ -43,6 +43,7 @@ h2{font-size:1.15rem;margin:26px 0 10px;color:var(--yellow);text-shadow:0 2px 0 
 .btn:disabled{opacity:.5}
 .top{display:flex;justify-content:space-between;align-items:center;padding:4px 0;gap:8px;text-shadow:0 2px 0 var(--ink);font-size:1.05rem}
 .ico{border:3px solid var(--ink);background:#fff;color:var(--ink);border-radius:10px;padding:4px 10px;font-size:1rem;cursor:pointer;font-family:'Jua';box-shadow:0 3px 0 var(--ink)}
+.top>span:last-child{white-space:nowrap}.top .ico{padding:3px 6px;font-size:.85rem;margin-left:2px}.top .badge{font-size:.95rem;padding:2px 8px}
 .bar{height:16px;background:rgba(0,0,0,.35);border:3px solid var(--ink);border-radius:10px;overflow:hidden;margin:8px 0 22px}
 .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),#7fe7ff);transition:width .3s}
 .prompt{text-align:center;margin:26px 0 22px}
@@ -95,6 +96,14 @@ textarea{width:100%;padding:12px;border:4px solid var(--ink);border-radius:14px;
 .x{border:0;background:none;color:#b8bce0;font-size:1.2rem;cursor:pointer}
 .muted{color:var(--muted)}
 .grid2{grid-template-columns:1fr 1fr}
+.bshelf{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.bdg{background:#fff;color:var(--ink);border:3px solid var(--ink);border-radius:14px;padding:8px 4px;text-align:center;box-shadow:0 4px 0 var(--ink);cursor:pointer}
+.bdg .be{font-size:1.7rem;line-height:1.2}.bdg .bn{font-size:.8rem;margin-top:2px}
+.bdg.lock{filter:grayscale(1);opacity:.45}
+.bdg.on{background:var(--yellow)}
+.earn{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:2px solid var(--pale);font-size:1.15rem}.earn:last-child{border:0}
+.earn b{font-family:'Lilita One';font-size:1.4rem;color:var(--orange)}
+input[type=range]{width:100%;accent-color:var(--yellow)}
 .opt.en{font-family:'Lilita One';font-size:1.5rem}
 .opt.gone{opacity:.25;pointer-events:none}
 .tbtn{display:flex;justify-content:space-between;align-items:center;font-size:1.25rem}
@@ -177,7 +186,66 @@ const PRAISE=['시온아! 굿!! 잘하고 있어~','오~ 정답! 역시 시온�
 const CHEER=['아쉬워! 할 수 있어~ 힘내보자!','괜찮아 시온아, 다음엔 맞힐 거야!','아깝다! 조금만 더 집중해 볼까?','틀려도 괜찮아~ 그래야 더 오래 기억돼!','이 단어는 곧 다시 나올 거야, 준비하자!','아쉽! 정답 한 번만 소리 내서 읽어볼까?','다시 도전! 시온이는 포기 안 하지~','어이쿠~ 이번엔 살짝 미끄러졌네!','괜찮아! 틀린 단어가 진짜 내 단어가 되는 거야~','조금만 더! 거의 다 왔어~','힘내 시온! 한 번 틀린 건 아무것도 아니야~','아쉬워라~ 정답을 눈에 꼭 담아두자!','다음엔 꼭! 시온이라면 할 수 있어!','오~ 살짝 헷갈렸구나? 다시 보면 돼~','이런! 하지만 아직 배틀은 안 끝났어!','괜찮아~ 보스도 처음엔 다 틀렸대!','아쉽다! 이 단어 이름 다시 한 번 불러줘~','틀린 건 배우는 중이라는 뜻이야~ 잘하고 있어!','힘내자! 다음 문제에서 만회하면 돼~','앗! 정답 잘 봐두고 다시 가보자~','시온아 괜찮아, 천천히 해도 돼~','아쉬워! 그래도 도전한 게 멋져!','조금 어려웠지? 다음엔 더 쉬울 거야~','다시 한 번! 시온이는 강하니까~','괜찮아~ 이 단어는 오늘 친해지는 중이야!','아깝네! 거의 다 맞았어~','힘내! 틀릴수록 별이 더 단단해져~','앗 아쉬워~ 정답 소리 한 번 듣고 갈까?','괜찮아 괜찮아! 다음 문제 가보자~','시온아, 넘어져도 다시 일어나는 게 진짜 실력이야!'];
 const PERFECT=['100점!! 시온아 완벽해!!','전부 다 맞혔어! 오늘 시온이 무적이야~','와우!! 한 문제도 안 틀렸어! 챔피언!','퍼펙트! 트로피 다 쓸어 담았다~','시온이 오늘 진짜 대박! 100점!','올 클리어! 보스가 도망갔어~','완벽 그 자체! 엄마 아빠한테 자랑하자!','100점! 이건 기록으로 남겨야 해~','우와~ 전부 정답! 시온이 영어 천재!','만점!! 오늘 밤 꿈에서도 영어 나오겠다~','한 번에 올킬! 시온이는 전설이야~','100점! 단어들이 시온이한테 항복했어~','완벽해! 이 묶음은 이제 시온이 거야!','퍼펙트 게임! 박수 짝짝짝!!','전부 맞혔어! 오늘 저녁에 자랑할 일 생겼네~','만점이야! 시온이 손이 마법 손이네~','100점!! 다음 묶음도 이렇게 가자~','우승! 우승! 시온이가 챔피언!','하나도 안 틀렸어! 진짜 멋지다 시온!','퍼펙트!! 오늘 시온이 별이 반짝반짝~'];
 const pick=a=>a[Math.floor(Math.random()*a.length)];
-const fbHtml=(ok,en)=>ok?`<div class="good">${pick(PRAISE)}</div>`:`<div class="wrongmsg">정답은 <b>${esc(en)}</b><span class="cheer">${pick(CHEER)}</span></div>`;
+const RANKS=[[1,'루키','🐣'],[3,'브론즈 브롤러','🥉'],[6,'실버 브롤러','🥈'],[10,'골드 브롤러','🥇'],[15,'다이아 브롤러','💎'],[20,'마스터','🔮'],[30,'레전드','👑']];
+const BADGES=[
+ {id:'first',n:'첫 출격',e:'🚀',d:'첫 배틀 완료',c:p=>p.battles>=1},
+ {id:'p1',n:'무결점',e:'✨',d:'보스전 무실점 1회',c:p=>p.perfects>=1},
+ {id:'p5',n:'퍼펙트 헌터',e:'🎯',d:'보스전 무실점 5회',c:p=>p.perfects>=5},
+ {id:'p20',n:'퍼펙트 마스터',e:'🏅',d:'보스전 무실점 20회',c:p=>p.perfects>=20},
+ {id:'boss10',n:'보스 킬러',e:'🐉',d:'보스전 클리어(오답 1개 이하) 10회',c:p=>p.bossWins>=10},
+ {id:'s3',n:'불붙었다',e:'🔥',d:'3일 연속 학습',c:p=>p.streak>=3},
+ {id:'s7',n:'일주일 전사',e:'⚔️',d:'7일 연속 학습',c:p=>p.streak>=7},
+ {id:'s30',n:'한 달 철인',e:'🦾',d:'30일 연속 학습',c:p=>p.streak>=30},
+ {id:'m10',n:'단어 사냥꾼',e:'🏹',d:'별 5개 단어 10개',c:p=>p.mastered>=10},
+ {id:'m50',n:'단어 정복자',e:'🛡️',d:'별 5개 단어 50개',c:p=>p.mastered>=50},
+ {id:'m100',n:'단어 왕',e:'👑',d:'별 5개 단어 100개',c:p=>p.mastered>=100},
+ {id:'c10',n:'콤보 브레이커',e:'💥',d:'연속 정답 10개',c:p=>p.bestCombo>=10},
+ {id:'c30',n:'무한 콤보',e:'🌀',d:'연속 정답 30개',c:p=>p.bestCombo>=30},
+ {id:'test',n:'묶음 정복',e:'🧪',d:'묶음 테스트(10단어↑) 100점',c:p=>p.testPerfects>=1},
+ {id:'comeback',n:'역전의 명수',e:'🔁',d:'3번 넘게 틀렸던 단어를 별 5개로',c:p=>p.comebacks>=1},
+ {id:'fast',n:'번개손',e:'⚡',d:'배틀을 8분 안에 완주',c:p=>p.fastest>0&&p.fastest<=480},
+ {id:'weekend',n:'주말 전사',e:'🏖️',d:'토·일 이틀 다 학습',c:p=>p.weekend>=1},
+ {id:'a10',n:'알파 수집가',e:'🔺',d:'알파 10개 모으기',c:p=>p.alpha>=10},
+ {id:'a50',n:'알파 부자',e:'💰',d:'알파 50개 모으기',c:p=>p.alpha>=50},
+ {id:'lv10',n:'골드 브롤러',e:'🥇',d:'레벨 10 달성',c:p=>p.level>=10},
+];
+const needXp=l=>500+250*(l-1);
+function lvl(xp){let l=1,x=xp;while(x>=needXp(l)){x-=needXp(l);l++;}return {level:l,into:x,need:needXp(l)};}
+function rankOf(l){let r=RANKS[0];RANKS.forEach(x=>{if(l>=x[0])r=x;});return r;}
+function streak(){ // 오늘(또는 어제)부터 거꾸로 이어진 학습일 수 (테스트 제외)
+  const days=new Set(S.sessions.filter(x=>!x.test).map(x=>x.date));
+  let d=today(),n=0;if(!days.has(d))d=addDays(d,-1);
+  while(days.has(d)){n++;d=addDays(d,-1);}
+  return n;
+}
+function profStats(){const p=S.prof;return {...p,streak:streak(),mastered:S.words.filter(w=>w.mastery>=5).length,level:lvl(p.xp).level};}
+function titleOf(){const p=S.prof;if(p.title&&p.badges[p.title])return BADGES.find(b=>b.id===p.title);const r=rankOf(lvl(p.xp).level);return {n:r[1],e:r[2]};}
+
+// ── 8비트 배경음악 + 효과음 (Web Audio, 외부 파일 없음)
+const Music={ctx:null,gain:null,on:false,vol:+(localStorage.getItem('wq_vol')??0.35),timer:null,next:0,step:0,song:Math.floor(Math.random()*5),LOOPS:4,
+  SONGS:[ // 5곡, 각 32박(8분음표). 4번 반복 뒤 다음 곡
+    {dt:.21,lead:'square',L:[76,79,76,72,74,77,74,71,72,76,79,84,83,79,76,79,69,72,76,81,67,71,74,79,65,69,72,77,79,77,74,71],B:[48,48,43,43,45,45,43,43,48,48,43,43,47,47,43,43,45,45,40,40,43,43,38,38,41,41,36,36,43,43,43,43]},
+    {dt:.19,lead:'square',L:[69,72,76,79,77,76,74,72,71,74,77,81,79,77,76,74,72,76,79,84,83,81,79,77,76,74,72,71,69,71,72,74],B:[45,45,52,52,41,41,48,48,43,43,50,50,40,40,47,47,45,45,52,52,41,41,48,48,43,43,43,43,40,40,40,40]},
+    {dt:.23,lead:'square',L:[79,79,83,86,84,83,81,79,78,79,81,83,81,79,78,74,79,81,83,86,88,86,83,79,81,79,78,79,74,78,79,79],B:[43,43,43,43,48,48,48,48,50,50,50,50,43,43,43,43,43,43,43,43,40,40,40,40,50,50,50,50,43,43,43,43]},
+    {dt:.2,lead:'triangle',L:[77,81,84,81,77,81,84,89,86,84,82,81,79,81,82,84,77,81,84,81,79,82,86,82,81,79,77,79,81,82,84,84],B:[41,41,48,48,41,41,48,48,46,46,53,53,43,43,50,50,41,41,48,48,43,43,50,50,46,46,46,46,48,48,48,48]},
+    {dt:.22,lead:'square',L:[74,77,81,86,84,81,77,74,76,79,83,88,86,83,79,76,74,77,81,86,84,86,88,89,88,86,84,81,79,81,83,86],B:[50,50,50,50,45,45,45,45,52,52,52,52,47,47,47,47,50,50,50,50,41,41,41,41,48,48,48,48,50,50,50,50]}
+  ],
+  init(){if(this.ctx)return;try{this.ctx=new (window.AudioContext||window.webkitAudioContext)();this.gain=this.ctx.createGain();this.gain.gain.value=this.vol;this.gain.connect(this.ctx.destination);}catch(e){}},
+  f(m){return 440*Math.pow(2,(m-69)/12);},
+  note(m,t,d,type,g){const o=this.ctx.createOscillator(),e=this.ctx.createGain();o.type=type;o.frequency.value=this.f(m);e.gain.setValueAtTime(g,t);e.gain.exponentialRampToValueAtTime(0.001,t+d);o.connect(e);e.connect(this.gain);o.start(t);o.stop(t+d+0.05);},
+  tick(){while(this.next<this.ctx.currentTime+0.5){
+    const sg=this.SONGS[this.song],i=this.step%32,g=sg.lead==='square'?0.07:0.16;
+    this.note(sg.L[i],this.next,sg.dt*0.85,sg.lead,g);this.note(sg.B[i],this.next,sg.dt*0.95,'triangle',0.22);
+    this.next+=sg.dt;this.step++;
+    if(this.step>=32*this.LOOPS){this.step=0;this.song=(this.song+1)%this.SONGS.length;this.next+=0.7;}
+  }},
+  start(){if(this.on||this.vol<=0)return;this.init();if(!this.ctx)return;if(this.ctx.state==='suspended')this.ctx.resume();this.on=true;this.next=this.ctx.currentTime+0.05;this.timer=setInterval(()=>this.tick(),200);},
+  stop(){this.on=false;clearInterval(this.timer);},
+  setVol(v){this.vol=v;localStorage.setItem('wq_vol',v);if(this.gain)this.gain.gain.value=v;if(v<=0)this.stop();else this.start();},
+  sfx(ok){if(!this.ctx||this.vol<=0)return;const t=this.ctx.currentTime;if(ok){this.note(84,t,0.09,'square',0.15);this.note(88,t+0.09,0.16,'square',0.15);}else this.note(43,t,0.28,'sawtooth',0.18);}
+};
+document.addEventListener('click',()=>Music.start());
+const fbHtml=(ok,en)=>(Music.sfx(ok),ok)?`<div class="good">${pick(PRAISE)}</div>`:`<div class="wrongmsg">정답은 <b>${esc(en)}</b><span class="cheer">${pick(CHEER)}</span></div>`;
 
 let S=load(), view='home';
 function migrate(s){
@@ -188,10 +256,11 @@ function migrate(s){
     return w;
   });
   s.sessions=s.sessions||[];s.group=s.group||'';s.cur=s.cur||null;
+  s.prof={xp:0,alpha:0,battles:0,perfects:0,bossWins:0,testPerfects:0,bestCombo:0,fastest:0,comebacks:0,weekend:0,lastStreakDay:'',lastWeekend:'',title:'',...(s.prof||{})};s.prof.badges=s.prof.badges||{};
   if(s.cur){s.cur.queue=s.cur.queue||[];s.cur.wrong=s.cur.wrong||{};s.cur.bossWrong=s.cur.bossWrong||{};s.cur.wids=s.cur.wids||[];}
   return s;
 }
-function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.words)return migrate(s);}catch(e){}return {words:[],sessions:[],cur:null,group:''};}
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.words)return migrate(s);}catch(e){}return migrate({words:[],sessions:[],cur:null,group:''});}
 function groups(){return [...new Set(S.words.map(w=>w.group))];}
 function pool(){return S.group?S.words.filter(w=>w.group===S.group):S.words;}
 function setGroup(g){S.group=g;save();showHome();}
@@ -291,7 +360,14 @@ function bossType(w){
 }
 function buildRound(){
   const c=S.cur,type=ROUNDS[c.round],boss=type==='boss';
-  c.queue=shuffle(c.wids).map(wid=>({wid,type:boss?bossType(W(wid)):type,retry:0,boss}));
+  const items=[];
+  c.wids.forEach(wid=>{
+    const w=W(wid),n=formsOf(w).length,t=boss?bossType(w):type;
+    const spellish=['spell','blank','write','spot'].includes(t);
+    if(boss){items.push({wid,type:t,retry:0,boss,f:(n&&spellish&&Math.random()<0.5)?1+Math.floor(Math.random()*n):0});}
+    else{items.push({wid,type:t,retry:0,boss,f:0});if(n&&spellish)for(let i=1;i<=n;i++)items.push({wid,type:t,retry:0,boss,f:i});}
+  });
+  c.queue=shuffle(items);
   c.idx=0;
 }
 function tickTime(){const c=S.cur,now=Date.now();c.seconds+=Math.min(120,(now-c.tick)/1000);c.tick=now;}
@@ -301,7 +377,9 @@ function answer(ok){
   tickTime();
   if(ok){
     if(it.retry===0&&!it.boss)w.mastery=Math.max(w.mastery,TYPE_LEVEL[it.type]);
+    c.correct=(c.correct||0)+1;c.combo=(c.combo||0)+1;c.maxCombo=Math.max(c.maxCombo||0,c.combo);
   }else{
+    c.combo=0;w.wrongs=(w.wrongs||0)+1;
     c.wrong[it.wid]=(c.wrong[it.wid]||0)+1;
     if(it.boss)c.bossWrong[it.wid]=(c.bossWrong[it.wid]||0)+1;
     // ponytail: 틀린 단어는 2~3문제 뒤에 다시, 최대 2번까지
@@ -324,9 +402,35 @@ function finish(){
     if(wrong>0)w.mastery=Math.max(0,w.mastery-1);
   });
   const rec={date:t,wids:c.wids,conquered,retry,seconds:Math.round(c.seconds),exits:c.exits,test:c.test||null};
-  S.sessions.push(rec);S.cur=null;save();
+  S.sessions.push(rec);
+  rec.earned=reward(c,rec);
+  S.cur=null;save();
   if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});
   showResult(rec);
+}
+
+// 보상 계산: XP는 노력, 알파는 잘했을 때만
+function reward(c,rec){
+  const p=S.prof,t=rec.date,isTest=!!c.test,wrongWords=rec.retry.length,notes=[];
+  const before=lvl(p.xp).level;
+  let xp=(c.correct||0)*10+(isTest?30:50),alpha=0;
+  if(!isTest){
+    p.battles++;
+    if(wrongWords<=1){alpha++;p.bossWins++;notes.push(['보스전 클리어',1]);}
+    if(wrongWords===0){alpha++;p.perfects++;notes.push(['무실점 보너스',1]);}
+    if((c.maxCombo||0)>=15){alpha++;notes.push(['연속 정답 15',1]);}
+    if(rec.seconds>30&&(p.fastest===0||rec.seconds<p.fastest))p.fastest=rec.seconds;
+    const st=streak();
+    if(p.lastStreakDay!==t){const bonus={3:1,7:3,30:10}[st];if(bonus){alpha+=bonus;notes.push([st+'일 연속 학습',bonus]);}p.lastStreakDay=t;}
+    const d=new Date(t+'T00:00:00').getDay();
+    if(d===0&&S.sessions.some(x=>!x.test&&x.date===addDays(t,-1))&&p.lastWeekend!==t){p.weekend++;p.lastWeekend=t;}
+  }else if(wrongWords===0&&rec.wids.length>=10){alpha++;p.testPerfects++;notes.push(['테스트 100점',1]);}
+  p.bestCombo=Math.max(p.bestCombo,c.maxCombo||0);
+  rec.wids.forEach(id=>{const w=W(id);if(w&&w.mastery>=5&&(w.wrongs||0)>=3&&!w.comeback){w.comeback=true;p.comebacks++;}});
+  p.xp+=xp;p.alpha+=alpha;
+  const after=lvl(p.xp).level,st=profStats(),badges=[];
+  BADGES.forEach(b=>{if(!p.badges[b.id]&&b.c(st)){p.badges[b.id]=t;badges.push(b.id);}});
+  return {xp,alpha,notes,badges,levelUp:after>before?after:0};
 }
 
 // ── 집중 모드 ─────────────────────────────────────────
@@ -349,8 +453,13 @@ function showHome(){
   if(S.cur&&!resume){S.cur=null;save();}
   const gs=groups();
   if(S.group&&!gs.includes(S.group))S.group='';
+  const p=S.prof,L=lvl(p.xp),ti=titleOf(),st=streak();
   render(`
     <h1>BRAWL<br>ENGLISH<small>브롤잉글리쉬</small></h1>
+    <div class="card" style="text-align:left;padding:14px 18px"><div class="row" style="justify-content:space-between;align-items:center;flex-wrap:nowrap">
+      <div><div style="font-size:1.35rem">시온 <span class="badge" style="font-size:.85rem;transform:none">${ti.e} ${esc(ti.n)}</span></div><div class="lbl">Lv ${L.level} · 다음 레벨까지 ${L.need-L.into} XP</div></div>
+      <div style="text-align:right;white-space:nowrap"><div class="big" style="font-size:1.9rem;color:var(--pink)">🔺${p.alpha}</div><div class="lbl">🔥 ${st}일 연속</div></div>
+    </div><div class="bar" style="margin:10px 0 0;height:12px"><i style="width:${L.into/L.need*100}%;background:linear-gradient(90deg,var(--orange),var(--yellow))"></i></div></div>
     ${gs.length>1?`<div class="chips"><button class="chip ${S.group?'':'on'}" onclick="setGroup('')">전체 복습</button>${gs.map(g=>`<button class="chip ${S.group===g?'on':''}" data-g="${esc(g)}">${esc(g)}</button>`).join('')}</div>`:''}
     ${S.words.length>=4&&pool().length<4?`<div class="card">이 묶음에는 단어가 ${pool().length}개뿐이에요.<br>4개 이상 있어야 배틀할 수 있어요.</div>`:S.words.length>=4?`
       <div class="card tilt"><div class="lbl">오늘의 배틀 · ${esc(S.group||'전체')}</div><div class="big">${plan.length}<span style="font-size:1.4rem"> 단어</span></div><div class="sub">새 단어 ${nNew} · 복습 ${plan.length-nNew}</div></div>
@@ -364,8 +473,15 @@ function showHome(){
     ${doneToday?`<div class="sub">오늘 배틀 완료 ✔ (${doneToday}회)</div>`:''}
     ${S.words.length>=4?`<h2>🧪 묶음별 테스트 <span style="font-size:.9rem;color:rgba(255,255,255,.7)">묶음 단어 전부 복습 퀴즈</span></h2>
       ${(gs.length>1?['']:[]).concat(gs).map(g=>{const n=(g?S.words.filter(w=>w.group===g):S.words).length;return n>=4?`<button class="btn tbtn" data-t="${esc(g)}"><span>${g?esc(g):'전체'}</span><small>${n}단어 ▶</small></button>`:'';}).join('')}`:''}
+    <h2>🏅 뱃지 <span style="font-size:.9rem;color:rgba(255,255,255,.7)">${Object.keys(p.badges).length}/${BADGES.length} · 딴 뱃지를 누르면 칭호로</span></h2>
+    <div class="bshelf">${BADGES.map(b=>`<div class="bdg ${p.badges[b.id]?(p.title===b.id?'on':''):'lock'}" data-b="${b.id}"><div class="be">${b.e}</div><div class="bn">${b.n}</div></div>`).join('')}</div>
+    <div class="card" style="text-align:left;padding:12px 18px;margin-top:20px"><div class="lbl">🎵 음악 볼륨</div><input type="range" min="0" max="1" step="0.05" value="${Music.vol}" id="vol"></div>
     <button class="btn link" onclick="showGate()">부모님 화면${famRef?' · ☁️ '+esc(famCode()):''}</button>`);
   app.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>setGroup(b.dataset.g));
+  app.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>{const bd=BADGES.find(x=>x.id===b.dataset.b);
+    if(p.badges[bd.id]){p.title=p.title===bd.id?'':bd.id;save();showHome();toast(p.title?'칭호: '+bd.n:'칭호를 뗐어요');}
+    else toast(bd.e+' '+bd.n+' — '+bd.d);});
+  $('#vol').oninput=e=>Music.setVol(+e.target.value);
   app.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>startTest(b.dataset.t));
 }
 function showPreview(){
@@ -390,7 +506,7 @@ function quitToHome(){ask('잠깐 쉬고 홈으로 갈까요?<br><span class="mu
 function showItem(){
   view='game';
   const c=S.cur,it=c.queue[c.idx],w=W(it.wid),total=c.queue.length;
-  render(`<div class="top"><span class="badge">${c.test?'🧪 TEST':it.boss?'👑 BOSS':'ROUND '+(c.round+1)}</span><span>${TYPE_NAME[it.type]}</span><span>${c.idx+1}/${total} <button class="ico" onclick="goFull()" title="전체화면">⛶</button> <button class="ico" onclick="quitToHome()" title="홈으로">🏠</button></span></div>
+  render(`<div class="top"><span class="badge">${c.test?'🧪 TEST':it.boss?'👑 BOSS':'ROUND '+(c.round+1)}</span><span>${TYPE_NAME[it.type]}${it.f?' ✨':''}</span><span>${c.idx+1}/${total} <button class="ico" onclick="goFull()" title="전체화면">⛶</button> <button class="ico" onclick="Music.setVol(Music.vol>0?0:0.35);showItem()" title="음악">${Music.vol>0?'🎵':'🔇'}</button> <button class="ico" onclick="quitToHome()" title="홈으로">🏠</button></span></div>
     <div class="bar"><i style="width:${c.idx/total*100}%"></i></div><div id="g"></div>`);
   GAMES[it.type](w,it);
 }
@@ -401,6 +517,13 @@ function showResult(rec){
   render(`
     <h1>${win?'VICTORY!':'GOOD<br>FIGHT!'}<small>${rec.test?'🧪 '+esc(rec.test)+' 테스트 끝!':win?'🏆 오늘 배틀 완전 승리!':'💪 잘 싸웠어요'}</small></h1>
     <div class="card tilt2" style="font-size:1.35rem;color:${win?'var(--green-d)':'var(--ink)'}">${win?pick(PERFECT):pick(CHEER)}</div>
+    ${rec.earned?`<div class="card" style="text-align:left;padding:12px 18px"><div class="lbl" style="text-align:center;margin-bottom:4px">오늘 얻은 것</div>
+      <div class="earn"><span>경험치</span><b>+${rec.earned.xp} XP</b></div>
+      ${rec.earned.notes.map(n=>`<div class="earn"><span>${esc(n[0])}</span><b style="color:var(--pink)">+${n[1]} 🔺</b></div>`).join('')}
+      ${rec.earned.alpha===0?'<div class="earn"><span class="muted">알파는 보스전 오답 1개 이하일 때 나와요</span></div>':''}
+      ${rec.earned.levelUp?`<div class="earn"><span>🎉 LEVEL UP!</span><b>Lv ${rec.earned.levelUp} ${esc(rankOf(rec.earned.levelUp)[1])}</b></div>`:''}
+      ${rec.earned.badges.map(id=>{const b=BADGES.find(x=>x.id===id);return `<div class="earn"><span>🏅 NEW BADGE!</span><b style="font-family:Jua;font-size:1.15rem">${b.e} ${b.n}</b></div>`;}).join('')}
+    </div>`:''}
     <div class="card tilt"><div class="row" style="justify-content:space-around">
       <div><div class="lbl">단어</div><div class="big">${rec.wids.length}</div></div>
       <div><div class="lbl">정복</div><div class="big" style="color:var(--green)">${rec.conquered.length}</div></div>
@@ -412,6 +535,14 @@ function showResult(rec){
 
 // ── 게임 ─────────────────────────────────────────────
 const GAMES={};
+// 변화형 문제: it.f = 변화형 번호(1부터). target = 이 문제에서 맞혀야 할 철자
+const formsOf=w=>(w.form||'').split(',').map(x=>x.trim()).filter(Boolean);
+const target=(w,it)=>it&&it.f?(formsOf(w)[it.f-1]||w.en):w.en;
+function promptHtml(w,it,say){
+  const t=target(w,it),spk=say?`<button class="spk" data-say="${esc(t)}">🔊</button>`:'';
+  if(it&&it.f)return `<div class="prompt"><span class="badge" style="font-size:.95rem">✨ 변화형</span><div class="word" style="font-size:2.4rem;margin-top:10px">${esc(w.en)}</div><div class="sub" style="font-size:1.25rem">${esc(w.ko)} → 변화형은?</div>${spk}</div>`;
+  return `<div class="prompt"><div class="ko">${esc(w.ko)}</div>${spk}</div>`;
+}
 function optionsFor(w,key){
   const others=shuffle(S.words.filter(x=>x.id!==w.id&&x[key]!==w[key])).slice(0,3);
   return shuffle([w,...others]);
@@ -430,7 +561,7 @@ function bindOpts(attr,rightVal,sayOnOk,rightEn){
 }
 GAMES.meaning=w=>{
   const opts=optionsFor(w,'ko');
-  $('#g').innerHTML=`<div class="prompt"><div class="word">${esc(w.en)}</div><button class="spk" data-say="${esc(w.en)}">🔊</button></div>
+  $('#g').innerHTML=`<div class="prompt"><div class="word">${esc(w.en)}${w.form?`<div style="font-size:1.4rem;color:#fff;-webkit-text-stroke:0;text-shadow:0 3px 0 var(--ink)">- ${esc(w.form)}</div>`:''}</div><button class="spk" data-say="${esc(w.en)}">🔊</button></div>
     <div class="opts">${opts.map(o=>`<button class="opt" data-id="${o.id}">${esc(o.ko)}</button>`).join('')}</div><div id="fb"></div>`;
   speak(w.en);bindOpts('id',w.id,null,w.ko);
 };
@@ -440,13 +571,13 @@ GAMES.english=w=>{
     <div class="opts">${opts.map(o=>`<button class="opt en" data-id="${o.id}">${esc(o.en)}</button>`).join('')}</div><div id="fb"></div>`;
   bindOpts('id',w.id,w.en);
 };
-function tileGame(w,open,bankChars){
-  const chars=w.en.split('');
+function tileGame(w,it,open,bankChars){
+  const t=target(w,it),chars=t.split('');
   const bank=shuffle(bankChars).map((ch,i)=>({ch,i}));
   const fill={},order=[];let done=false;
   const draw=state=>{
     const g=$('#g'),next=open.find(p=>!fill[p]);
-    g.innerHTML=`<div class="prompt"><div class="ko">${esc(w.ko)}</div><button class="spk" data-say="${esc(w.en)}">🔊</button></div>
+    g.innerHTML=promptHtml(w,it,true)+`
       <div class="slots">${chars.map((ch,p)=>{if(ch===' ')return '<span class="gap"></span>';const o=open.includes(p);const v=o?(fill[p]?fill[p].ch:''):ch;return `<span class="slot ${o?'open':'fixed'} ${o&&p===next?'cur':''} ${o?(state||''):''}">${esc(v)}</span>`;}).join('')}</div>
       <div class="tiles">${bank.map(t=>`<button class="tile" data-i="${t.i}" ${order.some(p=>fill[p]===t)||done?'disabled':''}>${esc(t.ch)}</button>`).join('')}</div>
       <div class="row"><button class="btn ghost" id="undo" ${done?'disabled':''}>← 지우기</button></div><div id="fb"></div>`;
@@ -460,42 +591,42 @@ function tileGame(w,open,bankChars){
   };
   const check=()=>{
     const ok=open.every(p=>fill[p].ch===chars[p]);done=true;draw(ok?'ok':'bad');
-    $('#fb').innerHTML=fbHtml(ok,w.en);
-    if(ok)speak(w.en);
+    $('#fb').innerHTML=fbHtml(ok,t);
+    if(ok)speak(t);
     setTimeout(()=>answer(ok),ok?1000:2000);
   };
   draw();
 }
-GAMES.spell=w=>{
-  const open=w.en.split('').map((c,i)=>c!==' '?i:-1).filter(i=>i>=0);
-  tileGame(w,open,open.map(i=>w.en[i]));
+GAMES.spell=(w,it)=>{
+  const t=target(w,it),open=t.split('').map((c,i)=>c!==' '?i:-1).filter(i=>i>=0);
+  tileGame(w,it,open,open.map(i=>t[i]));
 };
-function blankPositions(w,hard){
-  const idx=w.en.split('').map((c,i)=>c!==' '?i:-1).filter(i=>i>=0);
+function blankPositions(w,hard,it){
+  const t=target(w,it),idx=t.split('').map((c,i)=>c!==' '?i:-1).filter(i=>i>=0);
   const n=hard?Math.min(idx.length,Math.max(2,Math.ceil(idx.length*0.4))):1;
-  const miss=w.miss||{};
+  const miss=(it&&it.f)?{}:(w.miss||{});
   // 자주 틀린 자리부터 빈칸으로 (동점이면 무작위)
   return shuffle(idx).sort((a,b)=>(miss[b]||0)-(miss[a]||0)).slice(0,n).sort((a,b)=>a-b);
 }
 GAMES.blank=(w,it)=>{
   const hard=it.boss||w.mastery>=4;
-  const open=blankPositions(w,hard);
-  const missing=open.map(p=>w.en[p]);
-  const pool=shuffle('abcdefghijklmnopqrstuvwxyz'.split('').filter(c=>!w.en.includes(c)));
-  tileGame(w,open,missing.concat(pool.slice(0,3)));
+  const t=target(w,it),open=blankPositions(w,hard,it);
+  const missing=open.map(p=>t[p]);
+  const pool=shuffle('abcdefghijklmnopqrstuvwxyz'.split('').filter(c=>!t.includes(c)));
+  tileGame(w,it,open,missing.concat(pool.slice(0,3)));
 };
 function recordMiss(w,typed){
   w.miss=w.miss||{};
   for(let i=0;i<w.en.length;i++)if(typed[i]!==w.en[i])w.miss[i]=(w.miss[i]||0)+1;
   w.lastMiss=typed;save();
 }
-GAMES.write=w=>{
+GAMES.write=(w,it)=>{
   let tries=0,done=false;
-  const n=w.en.length;
-  const hint1=w.en.split('').map((c,i)=>i===0||i===n-1||c===' '?c:'_').join(' ');
-  const hint2=w.en.split('').map((c,i)=>i<Math.ceil(n*0.4)||i>=n-Math.ceil(n*0.3)||c===' '?c:'_').join(' ');
+  const t=target(w,it),n=t.length;
+  const hint1=t.split('').map((c,i)=>i===0||i===n-1||c===' '?c:'_').join(' ');
+  const hint2=t.split('').map((c,i)=>i<Math.ceil(n*0.4)||i>=n-Math.ceil(n*0.3)||c===' '?c:'_').join(' ');
   const draw=hint=>{
-    $('#g').innerHTML=`<div class="prompt"><div class="ko">${esc(w.ko)}</div></div>
+    $('#g').innerHTML=promptHtml(w,it,false)+`
       <div class="hint">${hint||'&nbsp;'}</div>
       <input id="inp" class="inp" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="영어로 써 보세요">
       <button class="btn primary" id="ok">확인</button><div id="fb"></div>`;
@@ -505,15 +636,15 @@ GAMES.write=w=>{
   const submit=()=>{
     if(done)return;
     const v=$('#inp').value.trim().toLowerCase();if(!v)return;
-    if(v===w.en){
-      done=true;speak(w.en);
+    if(v===t){
+      done=true;speak(t);
       $('#fb').innerHTML=tries===0?fbHtml(true):'<div class="good">힌트로 맞혔어요! 다시 한 번 나올 거예요</div>';
       setTimeout(()=>answer(tries===0),tries===0?1000:1500);return;
     }
-    tries++;recordMiss(w,v);
+    tries++;if(!it.f)recordMiss(w,v);
     if(tries===1)draw('힌트: '+esc(hint1));
     else if(tries===2)draw('힌트: '+esc(hint2));
-    else{done=true;speak(w.en);$('#fb').innerHTML=fbHtml(false,w.en);setTimeout(()=>answer(false),2200);}
+    else{done=true;speak(t);$('#fb').innerHTML=fbHtml(false,t);setTimeout(()=>answer(false),2200);}
   };
   draw();
 };
@@ -530,20 +661,20 @@ function misspell(en){
   ];
   return ops[rnd(ops.length)](en);
 }
-function decoys(w,n){
+function decoys(t,n,lastMiss){
   const set=new Set();
-  if(w.lastMiss&&w.lastMiss!==w.en)set.add(w.lastMiss);
+  if(lastMiss&&lastMiss!==t)set.add(lastMiss);
   let guard=0;
-  while(set.size<n&&guard++<60){const f=misspell(w.en);if(f&&f!==w.en&&f.length>1)set.add(f);}
-  const others=shuffle(S.words.filter(x=>x.en!==w.en)).map(x=>x.en);
+  while(set.size<n&&guard++<60){const f=misspell(t);if(f&&f!==t&&f.length>1)set.add(f);}
+  const others=shuffle(S.words.filter(x=>x.en!==t)).map(x=>x.en);
   for(const o of others){if(set.size>=n)break;set.add(o);}
   return [...set].slice(0,n);
 }
-GAMES.spot=w=>{
-  const opts=shuffle([w.en,...decoys(w,3)]);
-  $('#g').innerHTML=`<div class="prompt"><div class="lbl" style="color:rgba(255,255,255,.8)">🕵️ 진짜 철자는 딱 하나!</div><div class="ko">${esc(w.ko)}</div></div>
+GAMES.spot=(w,it)=>{
+  const t=target(w,it),opts=shuffle([t,...decoys(t,3,it.f?null:w.lastMiss)]);
+  $('#g').innerHTML=(it.f?promptHtml(w,it,false):`<div class="prompt"><div class="lbl" style="color:rgba(255,255,255,.8)">🕵️ 진짜 철자는 딱 하나!</div><div class="ko">${esc(w.ko)}</div></div>`)+`
     <div class="opts">${opts.map(o=>`<button class="opt en" data-v="${esc(o)}">${esc(o)}</button>`).join('')}</div><div id="fb"></div>`;
-  bindOpts('v',w.en,w.en);
+  bindOpts('v',t,t);
 };
 // 짝꿍 찾기: 영어 4개를 두고 뜻이 하나씩 나오면 짝을 찾기
 GAMES.match=w=>{
@@ -595,6 +726,13 @@ function showParent(){
       :`<div style="padding:6px"><div class="muted" style="margin-bottom:10px">첫 기기라면 코드를 만들고, 이미 코드가 있으면 아래에 넣어 연결하세요.</div>
         <button class="btn blue" id="mkfam">가족 코드 만들기</button>
         <div class="row" style="align-items:center"><input id="famin" class="inp" style="width:auto;flex:1;margin:0;font-size:1.3rem" placeholder="코드 6자리" maxlength="6" autocapitalize="characters"><button class="btn" id="joinfam" style="margin:0">연결</button></div></div>`}</div>
+    <h2>시온 현황</h2>
+    <div class="panel"><div class="list">
+      <div>레벨 <b>Lv ${lvl(S.prof.xp).level}</b> · ${esc(rankOf(lvl(S.prof.xp).level)[1])} · XP ${S.prof.xp}</div>
+      <div>알파 <b style="color:var(--pink)">🔺 ${S.prof.alpha}</b> · 연속 학습 <b>${streak()}일</b></div>
+      <div>보스전 클리어 ${S.prof.bossWins}회 · 무실점 ${S.prof.perfects}회 · 최고 콤보 ${S.prof.bestCombo}</div>
+      <div>뱃지 ${Object.keys(S.prof.badges).length}/${BADGES.length}: ${BADGES.filter(b=>S.prof.badges[b.id]).map(b=>b.e+' '+b.n).join(', ')||'<span class="muted">아직 없어요</span>'}</div>
+    </div></div>
     <h2>단어 넣기</h2>
     <input id="wg" class="inp" list="glist" style="font-family:Jua;font-size:1.1rem;text-align:left;margin:0 0 10px" placeholder="묶음 이름 (예: 양치기 소년)  비우면 '기본'">
     <datalist id="glist">${groups().map(g=>`<option value="${esc(g)}">`).join('')}</datalist>
@@ -610,7 +748,9 @@ function showParent(){
     <div class="panel list"><div>${due.length?due.map(w=>esc(w.en)).join(' / '):'<span class="muted">없어요</span>'}</div></div>
     <h2>자주 틀리는 철자</h2>
     <div class="panel list">${misses.length?misses.map(w=>`<div><b>${esc(w.en)}</b> → <span style="color:var(--red)">${esc(w.lastMiss)}</span></div>`).join(''):'<div class="muted">아직 없어요</div>'}</div>
-    <button class="btn danger" id="reset" style="margin-top:40px">전체 초기화</button>`);
+    <h2 style="margin-top:40px">초기화 (비밀번호 필요)</h2>
+    <div class="row"><button class="btn danger" id="resetxp">경험치·알파·뱃지 초기화</button><button class="btn danger" id="reset">단어·기록 초기화</button></div>
+    <div class="sub" style="font-size:.9rem">왼쪽은 시온 현황만 0으로, 오른쪽은 단어·학습 기록·현황 모두 지워요.</div>`);
   $('#addw').onclick=()=>{const n=addWords(parseWords($('#wt').value),$('#wg').value);toast(n+'개 추가했어요');showParent();};
   $('#sample').onclick=()=>{const n=addWords(parseWords(SAMPLE),$('#wg').value||'예시');toast(n+'개 추가했어요');showParent();};
   app.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{const w=W(b.dataset.del);ask(`"${esc(w.en)}" 지울까요?`,()=>{S.words=S.words.filter(x=>x.id!==w.id);save();showParent();});});
@@ -620,13 +760,9 @@ function showParent(){
   app.querySelectorAll('[data-editg]').forEach(b=>b.onclick=()=>{const g=b.dataset.editg;askForm('묶음 이름 바꾸기',[{id:'g',label:'묶음 이름',value:g}],v=>{
     const ng=v.g||'기본';S.words.forEach(w=>{if(w.group===g)w.group=ng;});if(S.group===g)S.group=ng;save();showParent();toast('바꿨어요');});});
   app.querySelectorAll('[data-delg]').forEach(b=>b.onclick=()=>{const g=b.dataset.delg;ask(`"${esc(g)}" 묶음 전체를 지울까요?`,()=>{S.words=S.words.filter(x=>x.group!==g);save();showParent();});});
-  $('#reset').onclick=()=>{
-    ask('단어와 기록을 모두 지울까요?<br><input id="rpw" class="inp" type="password" style="font-size:1.2rem;font-family:Jua" placeholder="초기화 비밀번호">',()=>{
-      if($('#rpw').value!==RESET_PW){toast('비밀번호가 달라요');return;}
-      S={words:[],sessions:[],cur:null,group:''};save();showParent();toast('모두 지웠어요');
-    });
-    $('#rpw').focus();
-  };
+  const pwAsk=(msg,fn)=>{ask(msg+'<br><input id="rpw" class="inp" type="password" style="font-size:1.2rem;font-family:Jua" placeholder="초기화 비밀번호">',()=>{if($('#rpw').value!==RESET_PW){toast('비밀번호가 달라요');return;}fn();});$('#rpw').focus();};
+  $('#reset').onclick=()=>pwAsk('단어와 학습 기록, 시온 현황을 모두 지울까요?',()=>{S=migrate({words:[],sessions:[],cur:null,group:''});save();showParent();toast('모두 지웠어요');});
+  $('#resetxp').onclick=()=>pwAsk('경험치·알파·뱃지·연속 기록을 0으로 돌릴까요?<br><span class="muted" style="font-size:1rem">단어와 별은 그대로 남아요</span>',()=>{S.prof=migrate({words:[],sessions:[]}).prof;S.sessions=[];S.words.forEach(w=>{delete w.comeback;delete w.wrongs;});save();showParent();toast('현황을 초기화했어요');});
   const on=(id,fn)=>{const el=$('#'+id);if(el)el.onclick=fn;};
   on('mkfam',()=>joinFam(newFamCode()));
   on('joinfam',()=>{const v=$('#famin').value.trim();if(v.length===6)joinFam(v);else toast('코드 6자리를 넣어주세요');});
