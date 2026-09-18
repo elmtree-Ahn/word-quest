@@ -316,7 +316,7 @@ function migrate(s){
     if(bad){w.form=w.form||bad[1].trim();w.ko=bad[2].trim();}
     return w;
   });
-  s.sessions=s.sessions||[];s.group=s.group||'';s.cur=s.cur||null;s.records=s.records||{};
+  s.sessions=s.sessions||[];s.games=s.games||[];s.group=s.group||'';s.cur=s.cur||null;s.records=s.records||{};
   s.prof={xp:0,alpha:0,alphaTotal:0,correctTotal:0,season:1,seasonsDone:0,badgeMs:0,battles:0,perfects:0,bossWins:0,testPerfects:0,bestCombo:0,fastest:0,comebacks:0,weekend:0,lastStreakDay:'',lastWeekend:'',title:'',...(s.prof||{})};s.prof.badges=s.prof.badges||{};s.prof.items=s.prof.items||{};if(!s.prof.alphaTotal)s.prof.alphaTotal=s.prof.alpha;
   if(s.cur){s.cur.queue=s.cur.queue||[];s.cur.wrong=s.cur.wrong||{};s.cur.bossWrong=s.cur.bossWrong||{};s.cur.wids=s.cur.wids||[];}
   return s;
@@ -550,7 +550,8 @@ function showHome(){
   const gs=groups(),list=(gs.length>1?['']:[]).concat(gs);
   const p=S.prof,L=lvl(p.xp),ti=titleOf(),st=streak();
   render(`
-    <h1>BRAWL<br>ENGLISH<small>브롤잉글리쉬</small></h1>
+    <div class="top"><span></span><span></span><button class="ico" onclick="Music.setVol(Music.vol>0?0:0.35);showHome()" title="음악">${Music.vol>0?'🎵 음악 켬':'🔇 음악 끔'}</button></div>
+    <h1 style="margin-top:6px">BRAWL<br>ENGLISH<small>브롤잉글리쉬</small></h1>
     <div class="card" style="text-align:left;padding:14px 18px"><div class="row" style="justify-content:space-between;align-items:center;flex-wrap:nowrap">
       <div id="av"></div>
       <div style="flex:1"><div style="font-size:1.35rem">${esc(userName())} <span class="badge stat" data-info="title" style="font-size:.85rem;transform:none;border-bottom:0">${ti.e} ${esc(ti.n)}</span></div><div class="lbl stat" data-info="level">Lv ${L.level} · 다음 레벨까지 ${L.need-L.into} XP</div></div>
@@ -560,26 +561,17 @@ function showHome(){
     <div class="lbl" style="margin-top:4px;font-size:.85rem">숫자를 누르면 설명이 나와요</div></div>
     ${isParent()?`<div class="card" style="padding:12px 18px;text-align:left"><div style="font-size:1.15rem">👨‍👩‍👦 ${esc(userName())} 모드</div><div class="lbl">게임 무제한 · 기록(XP·알파)은 시온이 것만 쌓여요</div><button class="btn blue" onclick="showParent()" style="margin:10px 0 0">📋 부모님 화면 열기</button></div>`:''}
     ${resume?`<button class="btn primary" onclick="resumeSession()">이어하기 ▶ <small style="font-size:1rem">${esc(S.cur.test?'테스트':'배틀')} · ${esc(S.cur.group||'')}</small></button>`:''}
-    ${S.words.length<4?`<div class="card">아직 단어가 없어요.<br>부모님 화면에서 단어를 4개 이상 넣어주세요.</div>`:`<h2>📚 단어 묶음 <span style="font-size:.9rem;color:rgba(255,255,255,.7)">레디로 익히고, 배틀로 정복!</span></h2>`}
-    ${list.map(g=>{const ws=gWords(g),plan=pickFrom(ws),nNew=plan.filter(id=>!W(id).due).length,m5=ws.filter(w=>w.mastery>=5).length,ok=ws.length>=4;
-      return `<div class="gcard"><div class="row" style="justify-content:space-between;align-items:center;flex-wrap:nowrap">
-        <div><div style="font-size:1.4rem">${g?esc(g):'🌍 전체'}</div><div class="lbl">${ws.length}단어 · 레디로 본 것 ${ws.filter(w=>w.seen).length}개 · 별5 ${m5}개${ok?'':' · 4개 이상 필요'}</div></div>
-        <div class="stars">${'★'.repeat(Math.round(ws.reduce((a,w)=>a+w.mastery,0)/Math.max(1,ws.length)))}</div></div>
-        <div class="row"><button class="btn blue" data-ready="${esc(g)}" ${ws.length?'':'disabled'}>📖 레디</button><button class="btn primary" style="font-size:1.4rem" data-battle="${esc(g)}" ${ok?'':'disabled'}>⚔️ 배틀</button></div>
-        ${ok?`<div class="row"><button class="btn" data-hunt="${esc(g)}" style="background:linear-gradient(#ffb3d9,var(--pink) 45%,#c2185b);color:#fff;-webkit-text-stroke:1px var(--ink);text-shadow:0 3px 0 var(--ink);margin-top:4px">🎮 브롤헌터스 <small style="font-size:.9rem;-webkit-text-stroke:0">남은 ${huntPlaysLeft()}판</small></button></div>
-        <button class="btn link" style="margin:0;padding:6px" data-t="${esc(g)}">🧪 전체 복습 테스트 (${ws.length}단어)</button>`:''}</div>`;}).join('')}
+    ${S.words.length<4?`<div class="card">아직 단어가 없어요.<br>부모님 화면에서 단어를 4개 이상 넣어주세요.</div>`:`
+    <div class="row" style="gap:12px"><button class="btn blue" style="flex:1;font-size:1.5rem;padding:22px 6px" onclick="showPick('ready')">📖 레디<small style="display:block;font-size:.85rem;-webkit-text-stroke:0">카드로 익히기</small></button><button class="btn primary" style="flex:1;font-size:1.5rem;padding:22px 6px" onclick="showPick('battle')">⚔️ 배틀<small style="display:block;font-size:.85rem;-webkit-text-stroke:0">3라운드 퀴즈</small></button></div>
+    <div class="row" style="gap:12px"><button class="btn" style="flex:1;background:linear-gradient(#ffb3d9,var(--pink) 45%,#c2185b);color:#fff;-webkit-text-stroke:1px var(--ink);text-shadow:0 3px 0 var(--ink);font-size:1.3rem" onclick="showPick('hunt')">🎮 브롤헌터스<small style="display:block;font-size:.85rem;-webkit-text-stroke:0">${isParent()?'무제한':'남은 '+huntPlaysLeft()+'판'}</small></button><button class="btn" style="flex:1;font-size:1.2rem" onclick="showPick('test')">🧪 테스트<small style="display:block;font-size:.85rem;color:var(--muted)">묶음 전체 복습</small></button></div>
+    <div class="sub" style="font-size:.9rem">📚 묶음 ${groups().length}개 · 단어 ${S.words.length}개 · 누르면 묶음을 골라요</div>`}
     <button class="btn" onclick="showBadges()" style="display:flex;justify-content:space-between;align-items:center"><span>🏅 뱃지 시즌 ${p.season}</span><span>${Object.keys(p.badges).length}/${BADGES.length} ▶</span></button>
     <button class="btn" onclick="showShop()" style="display:flex;justify-content:space-between;align-items:center"><span>🛒 알파 상점</span><span>🔺${p.alpha} ▶</span></button>
-    <div class="card" style="text-align:left;padding:12px 18px;margin-top:20px"><div class="lbl">🎵 음악 볼륨</div><input type="range" min="0" max="1" step="0.05" value="${Music.vol}" id="vol"></div>
     <button class="btn link" onclick="showGate()">부모님 화면${famRef?' · ☁️ 연결됨':''}</button>
     <button class="btn link" onclick="showLogin()">👤 ${esc(userName())} · 다른 사람으로 바꾸기</button>`);
-  app.querySelectorAll('[data-battle]').forEach(b=>b.onclick=()=>startSession(b.dataset.battle));
-  app.querySelectorAll('[data-hunt]').forEach(b=>b.onclick=()=>showHuntSetup(b.dataset.hunt));
   const av=$('#av');if(av)av.appendChild(avatarCanvas());
-  app.querySelectorAll('[data-ready]').forEach(b=>b.onclick=()=>showReady(b.dataset.ready));
   app.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>startTest(b.dataset.t));
   app.querySelectorAll('[data-info]').forEach(el=>el.onclick=()=>{const i=INFO[el.dataset.info];info(i[0],i[1]);});
-  $('#vol').oninput=e=>Music.setVol(+e.target.value);
 }
 // ── 뱃지 화면
 function showBadges(){
@@ -594,6 +586,18 @@ function showBadges(){
   app.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>{const bd=BADGES.find(x=>x.id===b.dataset.b);
     if(p.badges[bd.id]){p.title=p.title===bd.id?'':bd.id;save();showBadges();toast(p.title?'칭호: '+bd.n:'칭호를 뗐어요');}
     else toast('🔒 '+bd.n+' — '+bd.d);});
+}
+// ── 묶음 고르기 (최신 묶음이 위로)
+const PICK={ready:['📖 레디','어떤 묶음을 익힐까?',g=>showReady(g)],battle:['⚔️ 배틀','어떤 묶음과 싸울까?',g=>startSession(g)],hunt:['🎮 브롤헌터스','어떤 묶음 단어로 퀴즈?',g=>showHuntSetup(g)],test:['🧪 테스트','어떤 묶음을 전부 복습?',g=>startTest(g)]};
+function groupsNewest(){const t=g=>Math.max(...S.words.filter(w=>w.group===g).map(w=>parseInt(String(w.id).slice(0,8),36)||0));return groups().sort((a,b)=>t(b)-t(a));}
+function showPick(mode){
+  view='pick';const [title,sub,fn]=PICK[mode],gs=groupsNewest();
+  render(`<div class="top"><button class="ico" onclick="showHome()">🏠 홈</button><span class="badge">${title}</span><span></span></div>
+    <h1 style="font-size:2rem">${mode==='ready'?'READY':mode==='battle'?'BATTLE':mode==='hunt'?'HUNTERS':'TEST'}<small>${sub}</small></h1>
+    ${gs.map((g,i)=>{const ws=gWords(g),m5=ws.filter(w=>w.mastery>=5).length,seen=ws.filter(w=>w.seen).length,ok=ws.length>=4;
+      return `<button class="btn ${i===0?'primary':''}" data-pick="${esc(g)}" ${ok?'':'disabled'} style="display:flex;justify-content:space-between;align-items:center;text-align:left"><span>${i===0?'🆕 ':''}${esc(g)}</span><small style="font-size:.85rem;-webkit-text-stroke:0;${i===0?'':'color:var(--muted)'}">${ws.length}단어 · 레디 ${seen} · 별5 ${m5}${ok?'':' · 4개 이상 필요'}</small></button>`;}).join('')}
+    ${gs.length>1?`<button class="btn ghost" data-pick="" style="margin-top:14px">🌍 전체 (${S.words.length}단어)</button>`:''}`);
+  app.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>fn(b.dataset.pick));
 }
 // ── 레디: 카드 뒤집기 무한 캐러셀
 let R=null;
@@ -1211,6 +1215,7 @@ function endHunt(){
   if(!rc||g.score>rc.score){S.records[g.dk]={score:g.score,name:me,date:today()};newRec=g.score>0;}
   if(isParent()){alpha=0;xp=0;notes=[];}   // 엄마·아빠 게임은 기록만, XP·알파는 시온이 것
   p.alpha+=alpha;p.alphaTotal+=alpha;p.xp+=xp;p.huntBest=Math.max(p.huntBest||0,g.score);p.huntPlays=(p.huntPlays||0)+1;
+  S.games.push({date:today(),dk:g.dk,score:g.score,kills:g.kills,quizOk:g.quizOk,quizN:g.quizN,seconds:Math.round(g.t),user:curUser()||'sion',free:!!g.isFree});if(S.games.length>300)S.games=S.games.slice(-300);
   g.wrong.forEach(id=>{const w=W(id);if(w)w.wrongs=(w.wrongs||0)+1;});
   save();
   const wrongWords=[...new Set(g.wrong)].map(W).filter(Boolean);
@@ -1274,8 +1279,17 @@ function showParent(){
     <div class="panel">${S.words.length?`<table><tr><th>영어</th><th>뜻</th><th>숙련도</th><th>복습</th><th></th></tr>
       ${groups().map(g=>{const ws=S.words.filter(w=>w.group===g);return `<tr class="grp"><td colspan="4"><b>📚 ${esc(g)}</b> <span class="muted">${ws.length}개</span></td><td style="white-space:nowrap"><button class="x" data-editg="${esc(g)}" title="이름 바꾸기">✏️</button><button class="x" data-delg="${esc(g)}" title="묶음 지우기">✕</button></td></tr>`+
         ws.map(w=>`<tr><td><b class="en">${esc(w.en)}</b>${w.form?`<div class="muted" style="font-size:.8rem">- ${esc(w.form)}</div>`:''}</td><td>${esc(w.ko)}</td><td class="stars">${stars(w.mastery)}</td><td class="muted">${w.due?(w.due<=t?'오늘':w.due.slice(5)):'-'}</td><td style="white-space:nowrap"><button class="x" data-edit="${w.id}" title="수정">✏️</button><button class="x" data-del="${w.id}">✕</button></td></tr>`).join('');}).join('')}</table>`:'<div class="muted" style="padding:8px">아직 없어요</div>'}</div>
-    <h2>학습 기록</h2>
-    <div class="panel list">${sessions.length?sessions.map(s=>`<div><b>${s.date}</b> · 정복 ${s.conquered.length}/${s.wids.length} · ${Math.round(s.seconds/60)}분 · 화면 이탈 ${s.exits}회</div>`).join(''):'<div class="muted">아직 없어요</div>'}</div>
+    <h2>📅 매일 기록 (최근 14일)</h2>
+    <div class="panel" style="padding:6px 8px;overflow-x:auto">${(()=>{const days={};const add=(d,k,v)=>{days[d]=days[d]||{b:0,tt:0,min:0,conq:0,g:0,gmin:0,qo:0,qn:0};days[d][k]+=v;};
+      S.sessions.forEach(x=>{if(x.test)add(x.date,'tt',1);else{add(x.date,'b',1);add(x.date,'conq',x.conquered.length);}add(x.date,'min',x.seconds/60);});
+      (S.games||[]).forEach(x=>{if(x.user&&x.user!=='sion')return;add(x.date,'g',1);add(x.date,'gmin',x.seconds/60);add(x.date,'qo',x.quizOk);add(x.date,'qn',x.quizN);});
+      const ks=Object.keys(days).sort().reverse().slice(0,14);if(!ks.length)return '<div class="muted">아직 없어요</div>';
+      return `<table style="font-size:.85rem"><tr><th>날짜</th><th>배틀</th><th>테스트</th><th>공부</th><th>정복</th><th>게임</th><th>게임시간</th><th>퀴즈</th></tr>${ks.map(d=>{const v=days[d];return `<tr><td><b>${d.slice(5)}</b></td><td>${v.b}회</td><td>${v.tt}회</td><td>${Math.round(v.min)}분</td><td>${v.conq}개</td><td>${v.g}판</td><td>${Math.round(v.gmin)}분</td><td>${v.qn?v.qo+'/'+v.qn:'-'}</td></tr>`;}).join('')}</table>`;})()}</div>
+    <div class="sub" style="font-size:.85rem">게임 칸은 시온이 것만 세요 (엄마·아빠 판은 제외)</div>
+    <h2>배틀·테스트 기록</h2>
+    <div class="panel list">${sessions.length?sessions.map(s=>`<div><b>${s.date}</b> · ${s.test?'🧪 테스트 '+esc(s.test):'⚔️ 배틀'} · 정복 ${s.conquered.length}/${s.wids.length} · ${Math.round(s.seconds/60)}분 · 화면 이탈 ${s.exits}회</div>`).join(''):'<div class="muted">아직 없어요</div>'}</div>
+    <h2>🎮 게임 기록 (최근 10판)</h2>
+    <div class="panel list">${(S.games||[]).slice(-10).reverse().map(x=>`<div><b>${x.date}</b> · ${USERS[x.user]||'시온'} · ${DIFF[x.dk]?DIFF[x.dk].n:x.dk}${x.free?'(무료)':''} · ${x.score}점 · KO ${x.kills} · 퀴즈 ${x.quizOk}/${x.quizN} · ${Math.round(x.seconds/60)}분</div>`).join('')||'<div class="muted">아직 없어요</div>'}</div>
     <h2>내일까지 복습 예정 (${due.length}개)</h2>
     <div class="panel list"><div>${due.length?due.map(w=>esc(w.en)).join(' / '):'<span class="muted">없어요</span>'}</div></div>
     <h2>자주 틀리는 철자</h2>
