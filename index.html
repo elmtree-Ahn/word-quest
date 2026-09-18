@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1e3a8a">
+<title>WORD QUEST · 단어 모험</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Jua&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#141433;--yellow:#ffd23f;--orange:#ff8a1f;--green:#56d64a;--green-d:#2e9c25;--blue:#3fb6ff;--pink:#ff4fa3;--red:#ff4d4d;--muted:#6b6f99;--pale:#e6e9ff}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{margin:0;font-family:'Jua','Lilita One',-apple-system,"Apple SD Gothic Neo",sans-serif;color:#fff;background:linear-gradient(160deg,#1e3a8a 0%,#3b2a9e 55%,#5b21b6 100%) fixed;min-height:100vh}
+body::before{content:"";position:fixed;inset:0;background:repeating-linear-gradient(135deg,rgba(255,255,255,.05) 0 26px,transparent 26px 52px);pointer-events:none}
+#app{position:relative;max-width:540px;margin:0 auto;padding:16px 16px 40px;min-height:100vh}
+.en{font-family:'Lilita One','Jua',sans-serif}
+h1{font-family:'Lilita One','Jua',sans-serif;text-align:center;font-size:3rem;margin:34px 0 8px;color:var(--yellow);-webkit-text-stroke:2px var(--ink);text-shadow:0 5px 0 var(--ink),0 9px 0 rgba(0,0,0,.35);letter-spacing:1px;animation:float 3s ease-in-out infinite;line-height:1.05}
+h1 small{display:block;font-family:'Jua';font-size:1.3rem;color:#fff;-webkit-text-stroke:0;text-shadow:0 3px 0 var(--ink);letter-spacing:0;margin-top:6px}
+h2{font-size:1.15rem;margin:26px 0 10px;color:var(--yellow);text-shadow:0 2px 0 var(--ink)}
+@keyframes float{0%,100%{transform:rotate(-3deg) translateY(0)}50%{transform:rotate(-3deg) translateY(-7px)}}
+@keyframes pop{0%{transform:scale(.4)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+@keyframes slidein{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.card{background:#fff;color:var(--ink);border:4px solid var(--ink);border-radius:22px;box-shadow:0 8px 0 var(--ink);padding:20px;margin:16px 0;text-align:center;animation:slidein .3s}
+.card.tilt{transform:rotate(-1.5deg)}
+.card.tilt2{transform:rotate(1.2deg)}
+.lbl{color:var(--muted);font-size:1rem}
+.big{font-family:'Lilita One';font-size:3rem;color:var(--orange);-webkit-text-stroke:1.5px var(--ink);text-shadow:0 4px 0 var(--ink);line-height:1.1}
+.big span{font-family:'Jua';-webkit-text-stroke:0;color:var(--ink);text-shadow:none}
+.sub{color:rgba(255,255,255,.8);margin-top:6px;text-align:center;text-shadow:0 2px 0 rgba(0,0,0,.3)}
+.card .sub{color:var(--muted);text-shadow:none}
+.badge{display:inline-block;background:var(--yellow);color:var(--ink);border:3px solid var(--ink);border-radius:12px;padding:2px 12px;box-shadow:0 3px 0 var(--ink);transform:rotate(-2deg);font-size:1.1rem}
+.btn{display:block;width:100%;padding:16px;border:4px solid var(--ink);border-radius:18px;font-size:1.4rem;margin:14px 0;cursor:pointer;background:#fff;color:var(--ink);box-shadow:0 7px 0 var(--ink);font-family:'Jua';transition:transform .06s}
+.btn.primary{background:linear-gradient(#8ff57f,var(--green) 45%,var(--green-d));color:#fff;-webkit-text-stroke:1px var(--ink);text-shadow:0 3px 0 var(--ink);font-size:1.8rem;letter-spacing:1px}
+.btn.blue{background:linear-gradient(#8ad8ff,var(--blue) 45%,#1a8fd6);color:#fff;-webkit-text-stroke:1px var(--ink);text-shadow:0 3px 0 var(--ink)}
+.btn.ghost{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.4);box-shadow:none;font-size:1.1rem}
+.btn.link{background:none;border:0;box-shadow:none;color:rgba(255,255,255,.6);font-size:1rem}
+.btn.danger{background:var(--red);color:#fff;text-shadow:0 2px 0 var(--ink)}
+.btn:active{transform:translateY(5px);box-shadow:0 2px 0 var(--ink)}
+.btn.ghost:active,.btn.link:active{transform:none}
+.btn:disabled{opacity:.5}
+.top{display:flex;justify-content:space-between;align-items:center;padding:4px 0;gap:8px;text-shadow:0 2px 0 var(--ink);font-size:1.05rem}
+.ico{border:3px solid var(--ink);background:#fff;color:var(--ink);border-radius:10px;padding:4px 10px;font-size:1rem;cursor:pointer;font-family:'Jua';box-shadow:0 3px 0 var(--ink)}
+.bar{height:16px;background:rgba(0,0,0,.35);border:3px solid var(--ink);border-radius:10px;overflow:hidden;margin:8px 0 22px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),#7fe7ff);transition:width .3s}
+.prompt{text-align:center;margin:26px 0 22px}
+.word{font-family:'Lilita One';font-size:3.4rem;color:var(--yellow);-webkit-text-stroke:2px var(--ink);text-shadow:0 5px 0 var(--ink);word-break:break-word;line-height:1.1}
+.ko{font-size:2.2rem;text-shadow:0 4px 0 var(--ink);word-break:keep-all;line-height:1.2}
+.spk{border:3px solid var(--ink);background:#fff;border-radius:50%;width:58px;height:58px;font-size:1.5rem;margin-top:14px;box-shadow:0 4px 0 var(--ink);cursor:pointer}
+.spk:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.opts{display:grid;gap:14px}
+.opt{padding:18px;font-size:1.4rem;border:4px solid var(--ink);border-radius:18px;background:#fff;box-shadow:0 6px 0 var(--ink);cursor:pointer;text-align:center;font-family:'Jua';color:var(--ink)}
+.opt:active{transform:translateY(4px);box-shadow:0 2px 0 var(--ink)}
+.opt.ok{background:var(--green);color:#fff;text-shadow:0 2px 0 var(--ink);animation:pop .35s}
+.opt.bad{background:var(--red);color:#fff;text-shadow:0 2px 0 var(--ink);animation:shake .4s}
+.slots{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;margin:10px 0 26px;min-height:54px}
+.slot{width:42px;height:54px;border-radius:12px;background:#fff;border:3px solid var(--ink);display:flex;align-items:center;justify-content:center;font-family:'Lilita One';font-size:1.7rem;color:var(--ink);box-shadow:0 4px 0 var(--ink)}
+.slot.fixed{background:var(--pale);color:var(--muted)}
+.slot.open{background:rgba(255,255,255,.15);border-style:dashed;border-color:#fff;color:#fff}
+.slot.cur{border-style:solid;border-color:var(--yellow);box-shadow:0 0 0 4px rgba(255,210,63,.45),0 4px 0 var(--ink)}
+.slot.ok{background:var(--green);color:#fff;border-style:solid;border-color:var(--ink);animation:pop .35s}
+.slot.bad{background:var(--red);color:#fff;border-style:solid;border-color:var(--ink);animation:shake .4s}
+.gap{width:14px}
+.tiles{display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
+.tile{width:54px;height:58px;border:3px solid var(--ink);border-radius:14px;background:linear-gradient(#ffe97a,var(--yellow) 55%,#f2b300);font-family:'Lilita One';font-size:1.7rem;color:var(--ink);box-shadow:0 5px 0 var(--ink);cursor:pointer}
+.tile:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.tile:disabled{opacity:.2;transform:none}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.row .btn{width:auto;padding:12px 22px}
+.inp{width:100%;padding:16px;font-size:1.8rem;border:4px solid var(--ink);border-radius:16px;text-align:center;margin-top:10px;font-family:'Lilita One';color:var(--ink);box-shadow:inset 0 4px 0 var(--pale);outline:none}
+.inp:focus{box-shadow:inset 0 4px 0 var(--pale),0 0 0 4px rgba(255,210,63,.5)}
+.hint{text-align:center;font-size:1.6rem;letter-spacing:.1em;color:var(--yellow);text-shadow:0 3px 0 var(--ink);min-height:1.8em;font-family:'Lilita One'}
+.good{text-align:center;color:var(--green);-webkit-text-stroke:1px var(--ink);text-shadow:0 3px 0 var(--ink);font-family:'Lilita One';font-size:1.9rem;margin-top:14px;animation:pop .4s}
+.wrongmsg{text-align:center;font-size:1.3rem;margin-top:14px;text-shadow:0 2px 0 var(--ink)}
+.wrongmsg b{color:var(--yellow);font-family:'Lilita One';font-size:1.5rem}
+#toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:var(--yellow);color:var(--ink);border:3px solid var(--ink);box-shadow:0 4px 0 var(--ink);padding:12px 20px;border-radius:30px;opacity:0;transition:opacity .3s;pointer-events:none;max-width:90%;z-index:9;font-size:1.1rem}
+#toast.show{opacity:1}
+#modal{position:fixed;inset:0;background:rgba(10,10,40,.7);display:none;align-items:center;justify-content:center;padding:20px;z-index:10}
+#modal.show{display:flex}
+#modal .card{max-width:360px;width:100%;margin:0}
+.panel{background:#fff;color:var(--ink);border:4px solid var(--ink);border-radius:18px;box-shadow:0 6px 0 var(--ink);padding:10px 14px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+td,th{padding:8px 6px;border-bottom:2px solid var(--pale);text-align:left;font-size:.95rem;vertical-align:middle}
+th{color:var(--muted);font-weight:normal}
+textarea{width:100%;padding:12px;border:4px solid var(--ink);border-radius:14px;font-size:1rem;font-family:'Jua';color:var(--ink);box-shadow:0 5px 0 var(--ink)}
+.list div{padding:8px 0;border-bottom:2px solid var(--pale)}
+.list div:last-child{border:0}
+.wl{display:flex;justify-content:space-between;align-items:center;background:#fff;color:var(--ink);border:3px solid var(--ink);border-radius:16px;padding:12px 16px;margin:10px 0;font-size:1.25rem;cursor:pointer;box-shadow:0 5px 0 var(--ink);animation:slidein .3s}
+.wl b{font-family:'Lilita One';font-size:1.4rem}
+.wl:active{transform:translateY(3px);box-shadow:0 2px 0 var(--ink)}
+.stars{color:#f2b300;font-size:1rem;letter-spacing:1px;white-space:nowrap;-webkit-text-stroke:.5px var(--ink)}
+.x{border:0;background:none;color:#b8bce0;font-size:1.2rem;cursor:pointer}
+.muted{color:var(--muted)}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toast"></div>
+<div id="modal"></div>
+<script>
+'use strict';
+// ── 저장 ─────────────────────────────────────────────
+const KEY='wordquest_v1';
+const INTERVALS=[1,3,7,14,30];            // 복습 간격(일)
+const ROUNDS=['meaning','english','spell','blank','write','boss'];
+const TYPE_LEVEL={meaning:1,english:2,spell:3,blank:4,write:5};
+const LEVEL_NAME={1:'뜻 맞히기',2:'영어 찾기',3:'철자 조립',4:'빈칸 채우기',5:'직접 쓰기'};
+const ROUND_DESC={meaning:'영어를 보고 뜻을 골라요',english:'뜻을 보고 영어를 골라요',spell:'글자를 눌러 단어를 만들어요',blank:'비어 있는 글자를 채워요',write:'뜻을 보고 영어로 써요'};
+const SAMPLE=`pretend / ~인 척하다
+discover / 발견하다
+hungry / 배고픈
+climb / 오르다
+beautiful / 아름다운
+enough / 충분한
+together / 함께
+present / 선물
+prepare / 준비하다
+pretty / 예쁜
+bridge / 다리
+cloud / 구름
+dream / 꿈
+early / 이른
+forest / 숲
+giant / 거인
+honey / 꿀
+island / 섬
+jungle / 정글
+kitchen / 부엌`;
+
+let S=load(), view='home';
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.words)return s;}catch(e){}return {words:[],sessions:[],cur:null};}
+function save(){localStorage.setItem(KEY,JSON.stringify(S));}
+function fmt(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function today(){return fmt(new Date());}
+function addDays(s,n){const d=new Date(s+'T00:00:00');d.setDate(d.getDate()+n);return fmt(d);}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function stars(m){return '★'.repeat(m)+'☆'.repeat(5-m);}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function speak(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='en-US';u.rate=0.85;speechSynthesis.speak(u);}catch(e){}}
+let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2500);}
+const $=s=>document.querySelector(s);
+const app=$('#app');
+function W(id){return S.words.find(w=>w.id===id);}
+function render(h){app.innerHTML=h;window.scrollTo(0,0);}
+app.addEventListener('click',e=>{const b=e.target.closest('[data-say]');if(b)speak(b.dataset.say);});
+// 브라우저 팝업(prompt/confirm) 대신 쓰는 화면 안 확인창
+function ask(msg,onYes){
+  const m=$('#modal');
+  m.innerHTML=`<div class="card"><div style="font-size:1.3rem;margin-bottom:14px">${msg}</div><div class="row"><button class="btn danger" id="m-yes">네</button><button class="btn" id="m-no">아니요</button></div></div>`;
+  m.classList.add('show');
+  $('#m-yes').onclick=()=>{m.classList.remove('show');onYes();};
+  $('#m-no').onclick=()=>m.classList.remove('show');
+}
+
+// ── 단어 입력 ─────────────────────────────────────────
+function parseWords(text){
+  const out=[];
+  text.split(/\r?\n/).forEach(line=>{
+    const p=line.split(/\t|\s*[\/,:|]\s*|\s+-\s+/).map(s=>s.trim()).filter(Boolean);
+    if(p.length>=2&&/[a-zA-Z]/.test(p[0]))out.push({en:p[0].toLowerCase(),ko:p.slice(1).join(', ')});
+  });
+  return out;
+}
+function addWords(list){
+  let n=0;
+  list.forEach(({en,ko})=>{
+    const ex=S.words.find(w=>w.en===en);
+    if(ex){ex.ko=ko;return;}
+    S.words.push({id:uid(),en,ko,mastery:0,box:0,due:null,miss:null,lastMiss:null});n++;
+  });
+  save();return n;
+}
+
+// ── 오늘의 단어 고르기 ────────────────────────────────
+function pickToday(){
+  if(S.words.length<4)return [];
+  const t=today();
+  const due=S.words.filter(w=>w.due&&w.due<=t).sort((a,b)=>a.mastery-b.mastery||a.due.localeCompare(b.due));
+  const fresh=S.words.filter(w=>!w.due);
+  let pick=due.slice(0,6);
+  pick=pick.concat(fresh.slice(0,Math.min(5,10-pick.length)));
+  if(pick.length<10){
+    const rest=S.words.filter(w=>w.due&&!pick.includes(w)).sort((a,b)=>a.mastery-b.mastery||a.due.localeCompare(b.due));
+    pick=pick.concat(rest.slice(0,10-pick.length));
+  }
+  return pick.map(w=>w.id);
+}
+
+// ── 세션 진행 ─────────────────────────────────────────
+function startSession(){
+  const wids=pickToday();if(!wids.length)return;
+  S.cur={date:today(),wids,round:0,queue:[],idx:0,wrong:{},bossWrong:{},exits:0,seconds:0,tick:Date.now()};
+  buildRound();save();showPreview();
+}
+function resumeSession(){S.cur.tick=Date.now();save();if(S.cur.idx===0)showRoundIntro();else showItem();}
+function bossType(w){
+  const m=w.mastery;
+  const pool=m>=4?['write','blank','spell']:m>=2?['blank','spell','english']:['meaning','english','spell'];
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+function buildRound(){
+  const c=S.cur,type=ROUNDS[c.round],boss=type==='boss';
+  c.queue=shuffle(c.wids).map(wid=>({wid,type:boss?bossType(W(wid)):type,retry:0,boss}));
+  c.idx=0;
+}
+function tickTime(){const c=S.cur,now=Date.now();c.seconds+=Math.min(120,(now-c.tick)/1000);c.tick=now;}
+function answer(ok){
+  const c=S.cur;if(!c)return;
+  const it=c.queue[c.idx],w=W(it.wid);
+  tickTime();
+  if(ok){
+    if(it.retry===0&&!it.boss)w.mastery=Math.max(w.mastery,TYPE_LEVEL[it.type]);
+  }else{
+    c.wrong[it.wid]=(c.wrong[it.wid]||0)+1;
+    if(it.boss)c.bossWrong[it.wid]=(c.bossWrong[it.wid]||0)+1;
+    // ponytail: 틀린 단어는 2~3문제 뒤에 다시, 최대 2번까지
+    if(it.retry<2)c.queue.splice(Math.min(c.idx+3,c.queue.length),0,{...it,retry:it.retry+1});
+  }
+  c.idx++;
+  if(c.idx>=c.queue.length){
+    c.round++;
+    if(c.round>=ROUNDS.length){finish();return;}
+    buildRound();save();showRoundIntro();return;
+  }
+  save();showItem();
+}
+function finish(){
+  const c=S.cur,t=today(),conquered=[],retry=[];
+  c.wids.forEach(id=>{
+    const w=W(id),wrong=c.wrong[id]||0,bw=c.bossWrong[id]||0;
+    if(bw===0){conquered.push(id);w.due=addDays(t,INTERVALS[Math.min(w.box||0,4)]);w.box=(w.box||0)+1;}
+    else{retry.push(id);w.box=0;w.due=addDays(t,1);}
+    if(wrong>0)w.mastery=Math.max(0,w.mastery-1);
+  });
+  const rec={date:t,wids:c.wids,conquered,retry,seconds:Math.round(c.seconds),exits:c.exits};
+  S.sessions.push(rec);S.cur=null;save();
+  if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});
+  showResult(rec);
+}
+
+// ── 집중 모드 ─────────────────────────────────────────
+function goFull(){try{const r=document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();if(r&&r.catch)r.catch(()=>{});}catch(e){}}
+document.addEventListener('visibilitychange',()=>{
+  const c=S.cur;if(!c||view!=='game')return;
+  if(document.hidden){c.exits++;tickTime();save();}
+  else{c.tick=Date.now();toast('학습에 다시 집중해 볼까요? 🙂');}
+});
+window.addEventListener('beforeunload',e=>{if(S.cur&&view==='game'){e.preventDefault();e.returnValue='';}});
+
+// ── 화면 ─────────────────────────────────────────────
+function showHome(){
+  view='home';
+  const t=today(),doneToday=S.sessions.filter(s=>s.date===t).length;
+  const plan=pickToday(),nNew=plan.filter(id=>!W(id).due).length;
+  const conquered=S.words.filter(w=>w.mastery>=5).length;
+  const trophies=S.words.reduce((a,w)=>a+w.mastery,0);
+  const resume=S.cur&&S.cur.date===t;
+  if(S.cur&&!resume){S.cur=null;save();}
+  render(`
+    <h1>WORD<br>QUEST<small>단어 모험</small></h1>
+    ${S.words.length>=4?`
+      <div class="card tilt"><div class="lbl">오늘의 배틀</div><div class="big">${plan.length}<span style="font-size:1.4rem"> 단어</span></div><div class="sub">새 단어 ${nNew} · 복습 ${plan.length-nNew}</div></div>
+      <div class="card tilt2"><div class="row" style="justify-content:space-around">
+        <div><div class="lbl">🏆 트로피</div><div class="big" style="color:#f2b300">${trophies}</div></div>
+        <div><div class="lbl">👑 정복</div><div class="big" style="color:var(--blue)">${conquered}<span style="font-size:1.2rem;color:var(--muted)"> / ${S.words.length}</span></div></div>
+      </div></div>`
+    :`<div class="card">아직 단어가 없어요.<br>부모님 화면에서 단어를 4개 이상 넣어주세요.</div>`}
+    ${resume?`<button class="btn primary" onclick="resumeSession()">이어하기 ▶</button>`
+     :plan.length?`<button class="btn primary" onclick="startSession()">${doneToday?'한 번 더!':'배틀 시작!'}</button>`:''}
+    ${doneToday?`<div class="sub">오늘 배틀 완료 ✔ (${doneToday}회)</div>`:''}
+    <button class="btn link" onclick="showGate()">부모님 화면</button>`);
+}
+function showPreview(){
+  view='game';
+  const c=S.cur;
+  render(`<div class="top"><span class="badge">오늘의 단어</span><span>${c.wids.length}개</span></div>
+    <div class="sub">단어를 누르면 소리가 나요</div>
+    ${c.wids.map(id=>{const w=W(id);return `<div class="wl" data-say="${esc(w.en)}"><span><b>${esc(w.en)}</b> <span class="muted">${esc(w.ko)}</span></span><span class="stars">${stars(w.mastery)}</span></div>`;}).join('')}
+    <button class="btn primary" onclick="goFull();showRoundIntro()">전체화면으로 GO! ⛶</button>
+    <button class="btn ghost" onclick="showRoundIntro()">그냥 시작</button>`);
+}
+function showRoundIntro(){
+  view='game';
+  const c=S.cur,type=ROUNDS[c.round],boss=type==='boss';
+  render(`
+    <h1>${boss?'BOSS<br>BATTLE':'ROUND '+(c.round+1)}<small>${boss?'👑 오늘 배운 단어 총정리':LEVEL_NAME[TYPE_LEVEL[type]]}</small></h1>
+    <div class="card tilt"><div style="font-size:1.3rem">${boss?'여러 가지 방식으로 섞어서 나와요':ROUND_DESC[type]}</div></div>
+    <button class="btn primary" onclick="showItem()">GO!</button>`);
+}
+function showItem(){
+  view='game';
+  const c=S.cur,it=c.queue[c.idx],w=W(it.wid),total=c.queue.length;
+  render(`<div class="top"><span class="badge">${it.boss?'👑 BOSS':'ROUND '+(c.round+1)}</span><span>${LEVEL_NAME[TYPE_LEVEL[it.type]]}</span><span>${c.idx+1}/${total} <button class="ico" onclick="goFull()" title="전체화면">⛶</button></span></div>
+    <div class="bar"><i style="width:${c.idx/total*100}%"></i></div><div id="g"></div>`);
+  GAMES[it.type](w,it);
+}
+function showResult(rec){
+  view='home';
+  const hard=rec.retry.map(W).filter(Boolean);
+  const win=rec.retry.length===0;
+  render(`
+    <h1>${win?'VICTORY!':'GOOD<br>FIGHT!'}<small>${win?'🏆 오늘 배틀 완전 승리!':'💪 잘 싸웠어요'}</small></h1>
+    <div class="card tilt"><div class="row" style="justify-content:space-around">
+      <div><div class="lbl">단어</div><div class="big">${rec.wids.length}</div></div>
+      <div><div class="lbl">정복</div><div class="big" style="color:var(--green)">${rec.conquered.length}</div></div>
+      <div><div class="lbl">다시 도전</div><div class="big" style="color:var(--red)">${rec.retry.length}</div></div>
+    </div><div class="sub">${Math.round(rec.seconds/60)}분 동안 열심히 했어요</div></div>
+    ${hard.length?`<h2>내일 다시 만날 단어</h2>${hard.map(w=>`<div class="wl" data-say="${esc(w.en)}"><span><b>${esc(w.en)}</b> <span class="muted">${esc(w.ko)}</span></span><span class="stars">${stars(w.mastery)}</span></div>`).join('')}`:''}
+    <button class="btn primary" onclick="showHome()">홈으로</button>`);
+}
+
+// ── 게임 ─────────────────────────────────────────────
+const GAMES={};
+function optionsFor(w,key){
+  const others=shuffle(S.words.filter(x=>x.id!==w.id&&x[key]!==w[key])).slice(0,3);
+  return shuffle([w,...others]);
+}
+function bindOpts(rightId,sayOnOk){
+  let done=false;
+  app.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+    if(done)return;done=true;
+    const ok=b.dataset.id===rightId;
+    app.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x.dataset.id===rightId)x.classList.add('ok');});
+    if(!ok)b.classList.add('bad');
+    if(sayOnOk)speak(sayOnOk);
+    setTimeout(()=>answer(ok),ok?700:1500);
+  });
+}
+GAMES.meaning=w=>{
+  const opts=optionsFor(w,'ko');
+  $('#g').innerHTML=`<div class="prompt"><div class="word">${esc(w.en)}</div><button class="spk" data-say="${esc(w.en)}">🔊</button></div>
+    <div class="opts">${opts.map(o=>`<button class="opt" data-id="${o.id}">${esc(o.ko)}</button>`).join('')}</div>`;
+  speak(w.en);bindOpts(w.id);
+};
+GAMES.english=w=>{
+  const opts=optionsFor(w,'en');
+  $('#g').innerHTML=`<div class="prompt"><div class="ko">${esc(w.ko)}</div></div>
+    <div class="opts">${opts.map(o=>`<button class="opt en" data-id="${o.id}">${esc(o.en)}</button>`).join('')}</div>`;
+  bindOpts(w.id,w.en);
+};
+function tileGame(w,open,bankChars){
+  const chars=w.en.split('');
+  const bank=shuffle(bankChars).map((ch,i)=>({ch,i}));
+  const fill={},order=[];let done=false;
+  const draw=state=>{
+    const g=$('#g'),next=open.find(p=>!fill[p]);
+    g.innerHTML=`<div class="prompt"><div class="ko">${esc(w.ko)}</div><button class="spk" data-say="${esc(w.en)}">🔊</button></div>
+      <div class="slots">${chars.map((ch,p)=>{if(ch===' ')return '<span class="gap"></span>';const o=open.includes(p);const v=o?(fill[p]?fill[p].ch:''):ch;return `<span class="slot ${o?'open':'fixed'} ${o&&p===next?'cur':''} ${o?(state||''):''}">${esc(v)}</span>`;}).join('')}</div>
+      <div class="tiles">${bank.map(t=>`<button class="tile" data-i="${t.i}" ${order.some(p=>fill[p]===t)||done?'disabled':''}>${esc(t.ch)}</button>`).join('')}</div>
+      <div class="row"><button class="btn ghost" id="undo" ${done?'disabled':''}>← 지우기</button></div><div id="fb"></div>`;
+    g.querySelectorAll('.tile').forEach(b=>b.onclick=()=>{
+      const t=bank[+b.dataset.i],p=open.find(p=>!fill[p]);
+      if(p===undefined||done)return;
+      fill[p]=t;order.push(p);
+      if(order.length===open.length)check();else draw();
+    });
+    g.querySelector('#undo').onclick=()=>{const p=order.pop();if(p!==undefined){delete fill[p];draw();}};
+  };
+  const check=()=>{
+    const ok=open.every(p=>fill[p].ch===chars[p]);done=true;draw(ok?'ok':'bad');
+    $('#fb').innerHTML=ok?'<div class="good">PERFECT!</div>':`<div class="wrongmsg">정답은 <b>${esc(w.en)}</b></div>`;
+    if(ok)speak(w.en);
+    setTimeout(()=>answer(ok),ok?800:1800);
+  };
+  draw();
+}
+GAMES.spell=w=>{
+  const open=w.en.split('').map((c,i)=>c!==' '?i:-1).filter(i=>i>=0);
+  tileGame(w,open,open.map(i=>w.en[i]));
+};
+function blankPositions(w,hard){
+  const idx=w.en.split('').map((c,i)=>c!==' '?i:-1).filter(i=>i>=0);
+  const n=hard?Math.min(idx.length,Math.max(2,Math.ceil(idx.length*0.4))):1;
+  const miss=w.miss||{};
+  // 자주 틀린 자리부터 빈칸으로 (동점이면 무작위)
+  return shuffle(idx).sort((a,b)=>(miss[b]||0)-(miss[a]||0)).slice(0,n).sort((a,b)=>a-b);
+}
+GAMES.blank=(w,it)=>{
+  const hard=it.boss||w.mastery>=4;
+  const open=blankPositions(w,hard);
+  const missing=open.map(p=>w.en[p]);
+  const pool=shuffle('abcdefghijklmnopqrstuvwxyz'.split('').filter(c=>!w.en.includes(c)));
+  tileGame(w,open,missing.concat(pool.slice(0,3)));
+};
+function recordMiss(w,typed){
+  w.miss=w.miss||{};
+  for(let i=0;i<w.en.length;i++)if(typed[i]!==w.en[i])w.miss[i]=(w.miss[i]||0)+1;
+  w.lastMiss=typed;save();
+}
+GAMES.write=w=>{
+  let tries=0,done=false;
+  const n=w.en.length;
+  const hint1=w.en.split('').map((c,i)=>i===0||i===n-1||c===' '?c:'_').join(' ');
+  const hint2=w.en.split('').map((c,i)=>i<Math.ceil(n*0.4)||i>=n-Math.ceil(n*0.3)||c===' '?c:'_').join(' ');
+  const draw=hint=>{
+    $('#g').innerHTML=`<div class="prompt"><div class="ko">${esc(w.ko)}</div></div>
+      <div class="hint">${hint||'&nbsp;'}</div>
+      <input id="inp" class="inp" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="영어로 써 보세요">
+      <button class="btn primary" id="ok">확인</button><div id="fb"></div>`;
+    const i=$('#inp');i.focus();
+    $('#ok').onclick=submit;i.onkeydown=e=>{if(e.key==='Enter')submit();};
+  };
+  const submit=()=>{
+    if(done)return;
+    const v=$('#inp').value.trim().toLowerCase();if(!v)return;
+    if(v===w.en){
+      done=true;speak(w.en);
+      $('#fb').innerHTML=tries===0?'<div class="good">PERFECT!</div>':'<div class="good" style="font-size:1.3rem;font-family:Jua">힌트로 맞혔어요! 다시 한 번 나올 거예요</div>';
+      setTimeout(()=>answer(tries===0),tries===0?800:1500);return;
+    }
+    tries++;recordMiss(w,v);
+    if(tries===1)draw('힌트: '+esc(hint1));
+    else if(tries===2)draw('힌트: '+esc(hint2));
+    else{done=true;speak(w.en);$('#fb').innerHTML=`<div class="wrongmsg">정답은 <b>${esc(w.en)}</b></div>`;setTimeout(()=>answer(false),2000);}
+  };
+  draw();
+};
+
+// ── 부모님 화면 ───────────────────────────────────────
+function showGate(){
+  view='gate';
+  render(`<div class="top"><button class="ico" onclick="showHome()">← 홈</button><span>부모님 확인</span><span></span></div>
+    <div class="card tilt" style="margin-top:40px"><div class="lbl">부모님만 들어올 수 있어요</div><div class="big" style="font-size:2.4rem">12 × 12 = ?</div>
+    <input id="pin" class="inp" inputmode="numeric" placeholder="답을 쓰세요"><button class="btn blue" id="pin-ok">들어가기</button></div>`);
+  const i=$('#pin');i.focus();
+  const go=()=>{if(i.value.trim()==='144')showParent();else{toast('다시 생각해 보세요');i.value='';i.focus();}};
+  $('#pin-ok').onclick=go;i.onkeydown=e=>{if(e.key==='Enter')go();};
+}
+function showParent(){
+  view='parent';
+  const t=today(),tm=addDays(t,1);
+  const due=S.words.filter(w=>w.due&&w.due<=tm).sort((a,b)=>a.due.localeCompare(b.due));
+  const misses=S.words.filter(w=>w.lastMiss);
+  const sessions=S.sessions.slice(-10).reverse();
+  render(`<div class="top"><button class="ico" onclick="showHome()">← 홈</button><span>부모님 화면</span><span></span></div>
+    <h2>단어 넣기</h2>
+    <textarea id="wt" rows="6" placeholder="한 줄에 하나씩  (영어 / 뜻)&#10;pretend / ~인 척하다&#10;discover / 발견하다&#10;&#10;엑셀에서 두 칸 복사해 붙여넣어도 돼요"></textarea>
+    <div class="row"><button class="btn blue" id="addw">추가</button><button class="btn ghost" id="sample">예시 단어 20개 넣기</button></div>
+    <h2>단어 목록 (${S.words.length}개)</h2>
+    <div class="panel">${S.words.length?`<table><tr><th>영어</th><th>뜻</th><th>숙련도</th><th>복습</th><th></th></tr>
+      ${S.words.map(w=>`<tr><td><b class="en">${esc(w.en)}</b></td><td>${esc(w.ko)}</td><td class="stars">${stars(w.mastery)}</td><td class="muted">${w.due?(w.due<=t?'오늘':w.due.slice(5)):'-'}</td><td><button class="x" data-del="${w.id}">✕</button></td></tr>`).join('')}</table>`:'<div class="muted" style="padding:8px">아직 없어요</div>'}</div>
+    <h2>학습 기록</h2>
+    <div class="panel list">${sessions.length?sessions.map(s=>`<div><b>${s.date}</b> · 정복 ${s.conquered.length}/${s.wids.length} · ${Math.round(s.seconds/60)}분 · 화면 이탈 ${s.exits}회</div>`).join(''):'<div class="muted">아직 없어요</div>'}</div>
+    <h2>내일까지 복습 예정 (${due.length}개)</h2>
+    <div class="panel list"><div>${due.length?due.map(w=>esc(w.en)).join(' / '):'<span class="muted">없어요</span>'}</div></div>
+    <h2>자주 틀리는 철자</h2>
+    <div class="panel list">${misses.length?misses.map(w=>`<div><b>${esc(w.en)}</b> → <span style="color:var(--red)">${esc(w.lastMiss)}</span></div>`).join(''):'<div class="muted">아직 없어요</div>'}</div>
+    <button class="btn danger" id="reset" style="margin-top:40px">전체 초기화</button>`);
+  $('#addw').onclick=()=>{const n=addWords(parseWords($('#wt').value));toast(n+'개 추가했어요');showParent();};
+  $('#sample').onclick=()=>{const n=addWords(parseWords(SAMPLE));toast(n+'개 추가했어요');showParent();};
+  app.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{const w=W(b.dataset.del);ask(`"${esc(w.en)}" 지울까요?`,()=>{S.words=S.words.filter(x=>x.id!==w.id);save();showParent();});});
+  $('#reset').onclick=()=>ask('단어와 기록을 모두 지울까요?',()=>{S={words:[],sessions:[],cur:null};save();showParent();});
+}
+
+showHome();
+</script>
+</body>
+</html>
