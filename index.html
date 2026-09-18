@@ -288,7 +288,7 @@ function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function stars(m){return '★'.repeat(m)+'☆'.repeat(5-m);}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function speak(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='en-US';u.rate=0.85;speechSynthesis.speak(u);}catch(e){}}
+function speak(t){try{speechSynthesis.cancel();setTimeout(()=>{const u=new SpeechSynthesisUtterance(t);u.lang='en-US';u.rate=0.85;speechSynthesis.speak(u);},80);}catch(e){}}   // cancel 직후 speak가 씹히는 크롬 버그 피하려고 살짝 늦게
 let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2500);}
 const $=s=>document.querySelector(s);
 const app=$('#app');
@@ -539,7 +539,7 @@ function drawReady(){
     <div class="flip ${R.flip?'on':''}" id="fc"><div class="inner"><div class="face front">${front}</div><div class="face back">${back}</div></div></div>
     <div class="row" style="flex-wrap:nowrap"><button class="btn ghost" id="prev" style="flex:1">◀ 이전</button><button class="spk" data-say="${esc(w.en)}" style="margin:0;flex:none">🔊</button><button class="btn blue" id="next" style="flex:1">다음 ▶</button></div>
     <div class="sub">카드를 누르면 뒤집혀요 · 끝나면 처음부터 다시</div>`);
-  if(R.mode==='en'&&!R.flip)speak(w.en);
+  if(!R.flip)speak(w.en);   // 새 카드가 뜨면 바로 읽어주기 (한→영 모드도)
   const fc=$('#fc');
   fc.onclick=()=>{R.flip=!R.flip;fc.classList.toggle('on',R.flip);Music.sfx(true);if(R.flip){w.seen=today();save();}if(R.mode==='ko'&&R.flip)speak(w.en);};
   const go=d=>{R.i=(R.i+d+n)%n;R.flip=false;drawReady();};
