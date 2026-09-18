@@ -93,6 +93,12 @@ textarea{width:100%;padding:12px;border:4px solid var(--ink);border-radius:14px;
 .stars{color:#f2b300;font-size:1rem;letter-spacing:1px;white-space:nowrap;-webkit-text-stroke:.5px var(--ink)}
 .x{border:0;background:none;color:#b8bce0;font-size:1.2rem;cursor:pointer}
 .muted{color:var(--muted)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:6px 2px 8px;margin:6px 0 0;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:3px solid var(--ink);border-radius:14px;padding:6px 14px;background:rgba(255,255,255,.15);color:#fff;font-family:'Jua';font-size:1.05rem;cursor:pointer;box-shadow:0 3px 0 var(--ink)}
+.chip.on{background:var(--yellow);color:var(--ink)}
+.grp{background:var(--pale);color:var(--ink);font-size:1rem}
+.grp td{padding:6px}
 </style>
 </head>
 <body>
@@ -130,7 +136,10 @@ jungle / 정글
 kitchen / 부엌`;
 
 let S=load(), view='home';
-function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.words)return s;}catch(e){}return {words:[],sessions:[],cur:null};}
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.words){s.words.forEach(w=>{w.group=w.group||'기본';});s.group=s.group||'';return s;}}catch(e){}return {words:[],sessions:[],cur:null,group:''};}
+function groups(){return [...new Set(S.words.map(w=>w.group))];}
+function pool(){return S.group?S.words.filter(w=>w.group===S.group):S.words;}
+function setGroup(g){S.group=g;save();showHome();}
 function save(){localStorage.setItem(KEY,JSON.stringify(S));}
 function fmt(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function today(){return fmt(new Date());}
@@ -164,26 +173,27 @@ function parseWords(text){
   });
   return out;
 }
-function addWords(list){
-  let n=0;
+function addWords(list,group){
+  let n=0;group=(group||'').trim()||'기본';
   list.forEach(({en,ko})=>{
     const ex=S.words.find(w=>w.en===en);
-    if(ex){ex.ko=ko;return;}
-    S.words.push({id:uid(),en,ko,mastery:0,box:0,due:null,miss:null,lastMiss:null});n++;
+    if(ex){ex.ko=ko;ex.group=group;return;}
+    S.words.push({id:uid(),en,ko,group,mastery:0,box:0,due:null,miss:null,lastMiss:null});n++;
   });
   save();return n;
 }
 
 // ── 오늘의 단어 고르기 ────────────────────────────────
 function pickToday(){
-  if(S.words.length<4)return [];
+  const P=pool();
+  if(P.length<4)return [];
   const t=today();
-  const due=S.words.filter(w=>w.due&&w.due<=t).sort((a,b)=>a.mastery-b.mastery||a.due.localeCompare(b.due));
-  const fresh=S.words.filter(w=>!w.due);
+  const due=P.filter(w=>w.due&&w.due<=t).sort((a,b)=>a.mastery-b.mastery||a.due.localeCompare(b.due));
+  const fresh=P.filter(w=>!w.due);
   let pick=due.slice(0,6);
   pick=pick.concat(fresh.slice(0,Math.min(5,10-pick.length)));
   if(pick.length<10){
-    const rest=S.words.filter(w=>w.due&&!pick.includes(w)).sort((a,b)=>a.mastery-b.mastery||a.due.localeCompare(b.due));
+    const rest=P.filter(w=>w.due&&!pick.includes(w)).sort((a,b)=>a.mastery-b.mastery||a.due.localeCompare(b.due));
     pick=pick.concat(rest.slice(0,10-pick.length));
   }
   return pick.map(w=>w.id);
@@ -259,10 +269,13 @@ function showHome(){
   const trophies=S.words.reduce((a,w)=>a+w.mastery,0);
   const resume=S.cur&&S.cur.date===t;
   if(S.cur&&!resume){S.cur=null;save();}
+  const gs=groups();
+  if(S.group&&!gs.includes(S.group))S.group='';
   render(`
     <h1>WORD<br>QUEST<small>단어 모험</small></h1>
-    ${S.words.length>=4?`
-      <div class="card tilt"><div class="lbl">오늘의 배틀</div><div class="big">${plan.length}<span style="font-size:1.4rem"> 단어</span></div><div class="sub">새 단어 ${nNew} · 복습 ${plan.length-nNew}</div></div>
+    ${gs.length>1?`<div class="chips"><button class="chip ${S.group?'':'on'}" onclick="setGroup('')">전체 복습</button>${gs.map(g=>`<button class="chip ${S.group===g?'on':''}" data-g="${esc(g)}">${esc(g)}</button>`).join('')}</div>`:''}
+    ${S.words.length>=4&&pool().length<4?`<div class="card">이 묶음에는 단어가 ${pool().length}개뿐이에요.<br>4개 이상 있어야 배틀할 수 있어요.</div>`:S.words.length>=4?`
+      <div class="card tilt"><div class="lbl">오늘의 배틀 · ${esc(S.group||'전체')}</div><div class="big">${plan.length}<span style="font-size:1.4rem"> 단어</span></div><div class="sub">새 단어 ${nNew} · 복습 ${plan.length-nNew}</div></div>
       <div class="card tilt2"><div class="row" style="justify-content:space-around">
         <div><div class="lbl">🏆 트로피</div><div class="big" style="color:#f2b300">${trophies}</div></div>
         <div><div class="lbl">👑 정복</div><div class="big" style="color:var(--blue)">${conquered}<span style="font-size:1.2rem;color:var(--muted)"> / ${S.words.length}</span></div></div>
@@ -272,11 +285,12 @@ function showHome(){
      :plan.length?`<button class="btn primary" onclick="startSession()">${doneToday?'한 번 더!':'배틀 시작!'}</button>`:''}
     ${doneToday?`<div class="sub">오늘 배틀 완료 ✔ (${doneToday}회)</div>`:''}
     <button class="btn link" onclick="showGate()">부모님 화면</button>`);
+  app.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>setGroup(b.dataset.g));
 }
 function showPreview(){
   view='game';
   const c=S.cur;
-  render(`<div class="top"><span class="badge">오늘의 단어</span><span>${c.wids.length}개</span></div>
+  render(`<div class="top"><span class="badge">오늘의 단어</span><span>${esc(S.group||'전체')}</span><span>${c.wids.length}개</span></div>
     <div class="sub">단어를 누르면 소리가 나요</div>
     ${c.wids.map(id=>{const w=W(id);return `<div class="wl" data-say="${esc(w.en)}"><span><b>${esc(w.en)}</b> <span class="muted">${esc(w.ko)}</span></span><span class="stars">${stars(w.mastery)}</span></div>`;}).join('')}
     <button class="btn primary" onclick="goFull();showRoundIntro()">전체화면으로 GO! ⛶</button>
@@ -437,11 +451,14 @@ function showParent(){
   const sessions=S.sessions.slice(-10).reverse();
   render(`<div class="top"><button class="ico" onclick="showHome()">← 홈</button><span>부모님 화면</span><span></span></div>
     <h2>단어 넣기</h2>
+    <input id="wg" class="inp" list="glist" style="font-family:Jua;font-size:1.1rem;text-align:left;margin:0 0 10px" placeholder="묶음 이름 (예: 양치기 소년)  비우면 '기본'">
+    <datalist id="glist">${groups().map(g=>`<option value="${esc(g)}">`).join('')}</datalist>
     <textarea id="wt" rows="6" placeholder="한 줄에 하나씩  (영어 / 뜻)&#10;pretend / ~인 척하다&#10;discover / 발견하다&#10;&#10;엑셀에서 두 칸 복사해 붙여넣어도 돼요"></textarea>
     <div class="row"><button class="btn blue" id="addw">추가</button><button class="btn ghost" id="sample">예시 단어 20개 넣기</button></div>
     <h2>단어 목록 (${S.words.length}개)</h2>
     <div class="panel">${S.words.length?`<table><tr><th>영어</th><th>뜻</th><th>숙련도</th><th>복습</th><th></th></tr>
-      ${S.words.map(w=>`<tr><td><b class="en">${esc(w.en)}</b></td><td>${esc(w.ko)}</td><td class="stars">${stars(w.mastery)}</td><td class="muted">${w.due?(w.due<=t?'오늘':w.due.slice(5)):'-'}</td><td><button class="x" data-del="${w.id}">✕</button></td></tr>`).join('')}</table>`:'<div class="muted" style="padding:8px">아직 없어요</div>'}</div>
+      ${groups().map(g=>{const ws=S.words.filter(w=>w.group===g);return `<tr class="grp"><td colspan="4"><b>📚 ${esc(g)}</b> <span class="muted">${ws.length}개</span></td><td><button class="x" data-delg="${esc(g)}" title="묶음 지우기">✕</button></td></tr>`+
+        ws.map(w=>`<tr><td><b class="en">${esc(w.en)}</b></td><td>${esc(w.ko)}</td><td class="stars">${stars(w.mastery)}</td><td class="muted">${w.due?(w.due<=t?'오늘':w.due.slice(5)):'-'}</td><td><button class="x" data-del="${w.id}">✕</button></td></tr>`).join('');}).join('')}</table>`:'<div class="muted" style="padding:8px">아직 없어요</div>'}</div>
     <h2>학습 기록</h2>
     <div class="panel list">${sessions.length?sessions.map(s=>`<div><b>${s.date}</b> · 정복 ${s.conquered.length}/${s.wids.length} · ${Math.round(s.seconds/60)}분 · 화면 이탈 ${s.exits}회</div>`).join(''):'<div class="muted">아직 없어요</div>'}</div>
     <h2>내일까지 복습 예정 (${due.length}개)</h2>
@@ -449,10 +466,11 @@ function showParent(){
     <h2>자주 틀리는 철자</h2>
     <div class="panel list">${misses.length?misses.map(w=>`<div><b>${esc(w.en)}</b> → <span style="color:var(--red)">${esc(w.lastMiss)}</span></div>`).join(''):'<div class="muted">아직 없어요</div>'}</div>
     <button class="btn danger" id="reset" style="margin-top:40px">전체 초기화</button>`);
-  $('#addw').onclick=()=>{const n=addWords(parseWords($('#wt').value));toast(n+'개 추가했어요');showParent();};
-  $('#sample').onclick=()=>{const n=addWords(parseWords(SAMPLE));toast(n+'개 추가했어요');showParent();};
+  $('#addw').onclick=()=>{const n=addWords(parseWords($('#wt').value),$('#wg').value);toast(n+'개 추가했어요');showParent();};
+  $('#sample').onclick=()=>{const n=addWords(parseWords(SAMPLE),$('#wg').value||'예시');toast(n+'개 추가했어요');showParent();};
   app.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{const w=W(b.dataset.del);ask(`"${esc(w.en)}" 지울까요?`,()=>{S.words=S.words.filter(x=>x.id!==w.id);save();showParent();});});
-  $('#reset').onclick=()=>ask('단어와 기록을 모두 지울까요?',()=>{S={words:[],sessions:[],cur:null};save();showParent();});
+  app.querySelectorAll('[data-delg]').forEach(b=>b.onclick=()=>{const g=b.dataset.delg;ask(`"${esc(g)}" 묶음 전체를 지울까요?`,()=>{S.words=S.words.filter(x=>x.group!==g);save();showParent();});});
+  $('#reset').onclick=()=>ask('단어와 기록을 모두 지울까요?',()=>{S={words:[],sessions:[],cur:null,group:''};save();showParent();});
 }
 
 showHome();
