@@ -60,6 +60,16 @@ h2{font-size:1.15rem;margin:26px 0 10px;color:var(--yellow);text-shadow:0 2px 0 
 .submit{margin-top:18px;font-size:1.5rem}
 .stat{cursor:pointer;border-bottom:2px dotted #b8bce0}
 .famh{margin:18px 0 8px;font-size:1.1rem;color:var(--yellow);text-shadow:0 2px 0 var(--ink)}
+#cv{width:100%;border:4px solid var(--ink);border-radius:18px;background:#1b2440;display:block;touch-action:none;box-shadow:0 6px 0 var(--ink)}
+.hud{display:flex;justify-content:space-between;align-items:center;font-family:'Lilita One';font-size:1.3rem;text-shadow:0 2px 0 var(--ink);margin:6px 2px}
+#qz{position:fixed;inset:0;background:rgba(10,10,40,.82);display:none;align-items:center;justify-content:center;padding:16px;z-index:9}
+#qz.show{display:flex}
+#qz .card{width:100%;max-width:420px;margin:0}
+.qbar{height:12px;background:var(--pale);border:2px solid var(--ink);border-radius:6px;overflow:hidden;margin:8px 0 12px}
+.qbar i{display:block;height:100%;background:var(--red);transition:width .1s linear}
+.avatar{image-rendering:pixelated;width:64px;height:64px;flex:none}
+.shop{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#fff;color:var(--ink);border:3px solid var(--ink);border-radius:16px;padding:10px 14px;margin:10px 0;box-shadow:0 5px 0 var(--ink)}
+.shop .btn{width:auto;margin:0;padding:8px 14px;font-size:1rem}
 .slots{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;margin:10px 0 26px;min-height:54px}
 .slot{width:42px;height:54px;border-radius:12px;background:#fff;border:3px solid var(--ink);display:flex;align-items:center;justify-content:center;font-family:'Lilita One';font-size:1.7rem;color:var(--ink);box-shadow:0 4px 0 var(--ink)}
 .slot.fixed{background:var(--pale);color:var(--muted)}
@@ -141,6 +151,7 @@ input[type=range]{width:100%;accent-color:var(--yellow)}
 <div id="app"></div>
 <div id="toast"></div>
 <div id="modal"></div>
+<div id="qz"></div>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script>
@@ -276,7 +287,7 @@ function migrate(s){
     return w;
   });
   s.sessions=s.sessions||[];s.group=s.group||'';s.cur=s.cur||null;
-  s.prof={xp:0,alpha:0,alphaTotal:0,correctTotal:0,season:1,seasonsDone:0,badgeMs:0,battles:0,perfects:0,bossWins:0,testPerfects:0,bestCombo:0,fastest:0,comebacks:0,weekend:0,lastStreakDay:'',lastWeekend:'',title:'',...(s.prof||{})};s.prof.badges=s.prof.badges||{};if(!s.prof.alphaTotal)s.prof.alphaTotal=s.prof.alpha;
+  s.prof={xp:0,alpha:0,alphaTotal:0,correctTotal:0,season:1,seasonsDone:0,badgeMs:0,battles:0,perfects:0,bossWins:0,testPerfects:0,bestCombo:0,fastest:0,comebacks:0,weekend:0,lastStreakDay:'',lastWeekend:'',title:'',...(s.prof||{})};s.prof.badges=s.prof.badges||{};s.prof.items=s.prof.items||{};if(!s.prof.alphaTotal)s.prof.alphaTotal=s.prof.alpha;
   if(s.cur){s.cur.queue=s.cur.queue||[];s.cur.wrong=s.cur.wrong||{};s.cur.bossWrong=s.cur.bossWrong||{};s.cur.wids=s.cur.wids||[];}
   return s;
 }
@@ -295,6 +306,7 @@ function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;',
 function speak(t){try{speechSynthesis.cancel();setTimeout(()=>{const u=new SpeechSynthesisUtterance(t);u.lang='en-US';u.rate=0.85;speechSynthesis.speak(u);},80);}catch(e){}}   // cancel 직후 speak가 씹히는 크롬 버그 피하려고 살짝 늦게
 let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2500);}
 const $=s=>document.querySelector(s);
+const rInt=n=>Math.floor(Math.random()*n);
 const app=$('#app');
 function W(id){return S.words.find(w=>w.id===id);}
 function render(h){app.innerHTML=h;window.scrollTo(0,0);}
@@ -452,6 +464,7 @@ function finish(){
   const rec={date:t,wids:c.wids,conquered,retry,seconds:Math.round(c.seconds),exits:c.exits,test:c.test||null};
   S.sessions.push(rec);
   rec.earned=reward(c,rec);
+  if(!c.test){const h=huntState();if(h.tickets<3){h.tickets++;rec.earned.ticket=true;}}
   S.cur=null;save();
   if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});
   showResult(rec);
@@ -509,7 +522,8 @@ function showHome(){
   render(`
     <h1>BRAWL<br>ENGLISH<small>브롤잉글리쉬</small></h1>
     <div class="card" style="text-align:left;padding:14px 18px"><div class="row" style="justify-content:space-between;align-items:center;flex-wrap:nowrap">
-      <div><div style="font-size:1.35rem">시온 <span class="badge stat" data-info="title" style="font-size:.85rem;transform:none;border-bottom:0">${ti.e} ${esc(ti.n)}</span></div><div class="lbl stat" data-info="level">Lv ${L.level} · 다음 레벨까지 ${L.need-L.into} XP</div></div>
+      <div id="av"></div>
+      <div style="flex:1"><div style="font-size:1.35rem">시온 <span class="badge stat" data-info="title" style="font-size:.85rem;transform:none;border-bottom:0">${ti.e} ${esc(ti.n)}</span></div><div class="lbl stat" data-info="level">Lv ${L.level} · 다음 레벨까지 ${L.need-L.into} XP</div></div>
       <div style="text-align:right;white-space:nowrap"><div class="big stat" data-info="alpha" style="font-size:1.9rem;color:var(--pink);border-bottom:0">🔺${p.alpha}</div><div class="lbl stat" data-info="streak">🔥 ${st}일 연속</div></div>
     </div><div class="bar" style="margin:10px 0 0;height:12px"><i style="width:${L.into/L.need*100}%;background:linear-gradient(90deg,var(--orange),var(--yellow))"></i></div>
     <div class="lbl" style="margin-top:8px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px"><span class="stat" data-info="words">📚 누적 단어 <b>${S.words.length}</b>개</span><span class="stat" data-info="trophy">🏆 트로피 ${trophies}</span><span class="stat" data-info="conquer">👑 정복 ${conquered}</span><span>${doneToday?'오늘 배틀 '+doneToday+'회 ✔':'오늘 배틀 아직'}</span></div>
@@ -521,11 +535,15 @@ function showHome(){
         <div><div style="font-size:1.4rem">${g?esc(g):'🌍 전체'}</div><div class="lbl">${ws.length}단어 · 레디로 본 것 ${ws.filter(w=>w.seen).length}개 · 별5 ${m5}개${ok?'':' · 4개 이상 필요'}</div></div>
         <div class="stars">${'★'.repeat(Math.round(ws.reduce((a,w)=>a+w.mastery,0)/Math.max(1,ws.length)))}</div></div>
         <div class="row"><button class="btn blue" data-ready="${esc(g)}" ${ws.length?'':'disabled'}>📖 레디</button><button class="btn primary" style="font-size:1.4rem" data-battle="${esc(g)}" ${ok?'':'disabled'}>⚔️ 배틀</button></div>
-        ${ok?`<button class="btn link" style="margin:0;padding:6px" data-t="${esc(g)}">🧪 전체 복습 테스트 (${ws.length}단어)</button>`:''}</div>`;}).join('')}
+        ${ok?`<div class="row"><button class="btn" data-hunt="${esc(g)}" style="background:linear-gradient(#ffb3d9,var(--pink) 45%,#c2185b);color:#fff;-webkit-text-stroke:1px var(--ink);text-shadow:0 3px 0 var(--ink);margin-top:4px">🎮 브롤헌터스 <small style="font-size:.9rem;-webkit-text-stroke:0">남은 ${huntPlaysLeft()}판</small></button></div>
+        <button class="btn link" style="margin:0;padding:6px" data-t="${esc(g)}">🧪 전체 복습 테스트 (${ws.length}단어)</button>`:''}</div>`;}).join('')}
     <button class="btn" onclick="showBadges()" style="display:flex;justify-content:space-between;align-items:center"><span>🏅 뱃지 시즌 ${p.season}</span><span>${Object.keys(p.badges).length}/${BADGES.length} ▶</span></button>
+    <button class="btn" onclick="showShop()" style="display:flex;justify-content:space-between;align-items:center"><span>🛒 알파 상점</span><span>🔺${p.alpha} ▶</span></button>
     <div class="card" style="text-align:left;padding:12px 18px;margin-top:20px"><div class="lbl">🎵 음악 볼륨</div><input type="range" min="0" max="1" step="0.05" value="${Music.vol}" id="vol"></div>
     <button class="btn link" onclick="showGate()">부모님 화면${famRef?' · ☁️ '+esc(famCode()):''}</button>`);
   app.querySelectorAll('[data-battle]').forEach(b=>b.onclick=()=>startSession(b.dataset.battle));
+  app.querySelectorAll('[data-hunt]').forEach(b=>b.onclick=()=>startHunt(b.dataset.hunt));
+  const av=$('#av');if(av)av.appendChild(avatarCanvas());
   app.querySelectorAll('[data-ready]').forEach(b=>b.onclick=()=>showReady(b.dataset.ready));
   app.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>startTest(b.dataset.t));
   app.querySelectorAll('[data-info]').forEach(el=>el.onclick=()=>{const i=INFO[el.dataset.info];info(i[0],i[1]);});
@@ -613,6 +631,7 @@ function showResult(rec){
       <div class="earn"><span>경험치</span><b>+${rec.earned.xp} XP</b></div>
       ${rec.earned.notes.map(n=>`<div class="earn"><span>${esc(n[0])}</span><b style="color:var(--pink)">${n[1]?'+'+n[1]+' 🔺':''}</b></div>`).join('')}
       ${rec.earned.alpha===0?'<div class="earn"><span class="muted">알파는 보스전 오답 1개 이하일 때 나와요</span></div>':''}
+      ${rec.earned.ticket?'<div class="earn"><span>🎟️ 브롤헌터스 티켓</span><b style="font-family:Jua;font-size:1.1rem">+1장</b></div>':''}
       ${rec.earned.levelUp?`<div class="earn"><span>🎉 LEVEL UP!</span><b>Lv ${rec.earned.levelUp} ${esc(rankOf(rec.earned.levelUp)[1])}</b></div>`:''}
       ${rec.earned.badges.map(id=>{const b=BADGES.find(x=>x.id===id);return `<div class="earn"><span>🏅 NEW BADGE!</span><b style="font-family:Jua;font-size:1.15rem">${b.e} ${b.n}</b></div>`;}).join('')}
     </div>`:''}
@@ -752,6 +771,215 @@ GAMES.write=(w,it)=>{
   draw();
 };
 
+// 철자 탐정: 진짜 철자 하나 + 그럴듯한 오타들
+function misspell(en){
+  const v='aeiou';
+  const ops=[
+    s=>{const i=rInt(s.length-1);return s[i]===s[i+1]?null:s.slice(0,i)+s[i+1]+s[i]+s.slice(i+2);},
+    s=>{const idx=[...s].map((c,i)=>v.includes(c)?i:-1).filter(i=>i>=0);if(!idx.length)return null;const i=idx[rInt(idx.length)];const alt=v.replace(s[i],'');return s.slice(0,i)+alt[rInt(alt.length)]+s.slice(i+1);},
+    s=>{const i=1+rInt(s.length-1);return s.slice(0,i)+s.slice(i+1);},
+    s=>{const i=1+rInt(s.length-1);return s.slice(0,i)+s[i]+s.slice(i);}
+  ];
+  return ops[rInt(ops.length)](en);
+}
+function decoys(t,n,lastMiss){
+  const set=new Set();
+  if(lastMiss&&lastMiss!==t)set.add(lastMiss);
+  let guard=0;
+  while(set.size<n&&guard++<60){const f=misspell(t);if(f&&f!==t&&f.length>1)set.add(f);}
+  const others=shuffle(S.words.filter(x=>x.en!==t)).map(x=>x.en);
+  for(const o of others){if(set.size>=n)break;set.add(o);}
+  return [...set].slice(0,n);
+}
+GAMES.spot=(w,it)=>{
+  const t=target(w,it),opts=shuffle([t,...decoys(t,3,it.f?null:w.lastMiss)]);
+  $('#g').innerHTML=(it.f?promptHtml(w,it,false):`<div class="prompt"><div class="lbl" style="color:rgba(255,255,255,.8)">🕵️ 진짜 철자는 딱 하나!</div><div class="ko">${esc(w.ko)}</div></div>`)+`
+    <div class="opts">${opts.map(o=>`<button class="opt en" data-v="${esc(o)}">${esc(o)}</button>`).join('')}</div>${SUBMIT}<div id="fb"></div>`;
+  bindOpts('v',t,t);
+};
+// 짝꿍 찾기: 영어 4개를 두고 뜻이 하나씩 나오면 짝을 찾기 (누르는 게 곧 답이라 바로 채점)
+GAMES.match=w=>{
+  const others=shuffle(S.words.filter(x=>x.id!==w.id&&x.en!==w.en&&x.ko!==w.ko)).slice(0,3);
+  const set=shuffle([w,...others]),order=shuffle(set),found=new Set();
+  let i=0,wrongOnW=false,done=false;
+  const draw=()=>{
+    const cur=order[i],g=$('#g');
+    g.innerHTML=`<div class="prompt"><div class="lbl" style="color:rgba(255,255,255,.8)">🤝 짝꿍 찾기 ${i+1}/${order.length}</div><div class="ko">${esc(cur.ko)}</div></div>
+      <div class="opts grid2">${set.map(o=>`<button class="opt en ${found.has(o.id)?'gone':''}" data-id="${o.id}">${esc(o.en)}</button>`).join('')}</div>`;
+    g.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+      if(done)return;
+      if(b.dataset.id===cur.id){
+        found.add(cur.id);b.classList.add('ok');speak(cur.en);i++;
+        if(i>=order.length){done=true;$('#g').insertAdjacentHTML('beforeend',wrongOnW?`<div class="wrongmsg"><span class="cheer">${pick(CHEER)}</span></div>`:fbHtml(true));setTimeout(()=>answer(!wrongOnW),1000);}
+        else setTimeout(draw,450);
+      }else{
+        b.classList.add('bad');if(cur.id===w.id)wrongOnW=true;
+        setTimeout(()=>b.classList.remove('bad'),450);
+      }
+    });
+  };
+  draw();
+};
+
+// ── 브롤헌터스: 3분 아레나 + 5초 퀴즈 ─────────────────────
+const SHOP=[
+ {id:'skin_gold',t:'skin',n:'골드 가운',e:'🥼',p:10,d:'반짝이는 황금 가운'},{id:'skin_ninja',t:'skin',n:'닌자 시온',e:'🥷',p:8,d:'검은 닌자복'},
+ {id:'skin_space',t:'skin',n:'우주 시온',e:'👨‍🚀',p:12,d:'은빛 우주복'},{id:'skin_dragon',t:'skin',n:'드래곤 슈트',e:'🐉',p:20,d:'붉은 드래곤 갑옷'},
+ {id:'wpn_beaker',t:'wpn',n:'비커 폭탄',e:'🧪',p:6,d:'초록 비커가 날아가요'},{id:'wpn_bolt',t:'wpn',n:'번개 연필',e:'⚡',p:10,d:'노란 번개가 번쩍'},
+ {id:'boots',t:'buff',n:'스피드 신발',e:'👟',p:5,d:'이동 속도 +10%'},{id:'heart4',t:'buff',n:'하트 4개',e:'💗',p:8,d:'하트가 하나 더'},{id:'crit7',t:'buff',n:'크리티컬 7초',e:'💥',p:9,d:'크리티컬이 2초 더 길게'},
+ {id:'pet_cat',t:'pet',n:'실험실 고양이',e:'🐱',p:8,d:'떨어진 별을 대신 주워요'},
+];
+const PIX=['....HHHHHHHH....','...HHHHHHHHHH...','...HHHHHHHHHH...','...HSSSSSSSSH...','...SGGSSSSGGS...','...SGGSSSSGGS...','...SSSSSSSSSS...','....SSSMMSSS....','.....SSSSSS.....','..CCCTTTTTTCCC..','.CCCCTTTTTTCCCC.','.CCCCTTTTTTCCCC.','.CCC.TTTTTT.CCC.','.PP..CCCCCC.....','.PP..CCCCCC.....','.....SS..SS.....'];
+const PAL={base:{H:'#1a1a1a',S:'#f6d3b3',G:'#2b2b2b',M:'#c0392b',C:'#f4f4f4',T:'#2ecc71',P:'#7ed957'},
+  skin_gold:{C:'#ffd23f',T:'#ff8a1f'},skin_ninja:{C:'#23232b',T:'#444',H:'#111'},skin_space:{C:'#c8d6e5',T:'#6c8cff',H:'#dfe6ee'},skin_dragon:{C:'#e74c3c',T:'#2ecc71',H:'#27ae60'}};
+function drawPix(ctx,x,y,sc,skin){const pal={...PAL.base,...(PAL[skin]||{})};PIX.forEach((row,r)=>{for(let c=0;c<16;c++){const k=row[c];if(k==='.')continue;ctx.fillStyle=pal[k]||'#000';ctx.fillRect(x+c*sc,y+r*sc,sc,sc);}});}
+function avatarCanvas(){const cv=document.createElement('canvas');cv.width=64;cv.height=64;cv.className='avatar';drawPix(cv.getContext('2d'),0,0,4,S.prof.skin);return cv;}
+function huntState(){const t=today();if(!S.hunt||S.hunt.date!==t)S.hunt={date:t,plays:0,tickets:0,perfect:''};return S.hunt;}
+function huntPlaysLeft(){const h=huntState();return (h.plays===0?1:0)+h.tickets;}
+function has(id){return !!(S.prof.items&&S.prof.items[id]);}
+
+function showShop(){
+  view='shop';
+  const p=S.prof;p.items=p.items||{};
+  const kinds={skin:'👕 스킨',wpn:'🔫 무기 이펙트',buff:'💪 능력',pet:'🐾 펫'};
+  render(`<div class="top"><button class="ico" onclick="showHome()">🏠 홈</button><span class="badge">🛒 알파 상점</span><span>🔺${p.alpha}</span></div>
+    <div class="card" style="padding:12px 18px;display:flex;gap:14px;align-items:center;text-align:left"><div id="av"></div><div><div style="font-size:1.2rem">시온 헌터</div><div class="lbl">알파로 아이템을 사요. 한 번 사면 영원히 내 것!</div></div></div>
+    ${Object.keys(kinds).map(k=>`<h2>${kinds[k]}</h2>${SHOP.filter(i=>i.t===k).map(i=>{const own=has(i.id),eq=(i.t==='skin'&&p.skin===i.id)||(i.t==='wpn'&&p.wpn===i.id)||(i.t==='pet'&&p.pet===i.id);
+      return `<div class="shop"><div><div style="font-size:1.15rem">${i.e} ${i.n}</div><div class="lbl">${i.d}</div></div>
+        ${own?(i.t==='buff'?'<span class="badge" style="transform:none">보유</span>':`<button class="btn ${eq?'':'blue'}" data-eq="${i.id}">${eq?'장착 중':'장착'}</button>`):`<button class="btn ${p.alpha>=i.p?'primary':''}" data-buy="${i.id}" ${p.alpha>=i.p?'':'disabled'} style="font-size:1.1rem">🔺${i.p}</button>`}</div>`;}).join('')}`).join('')}
+    ${['skin','wpn','pet'].map(k=>`<div class="sub" style="font-size:.9rem">${k==='skin'?'기본 시온으로 돌아가려면':k==='wpn'?'연필 총알로 돌아가려면':'펫을 빼려면'} <a href="#" data-uneq="${k}" style="color:#fff">여기</a></div>`).join('')}`);
+  $('#av').appendChild(avatarCanvas());
+  app.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{const i=SHOP.find(x=>x.id===b.dataset.buy);ask(`${i.e} ${i.n}을(를) 🔺${i.p}에 살까요?`,()=>{if(p.alpha<i.p)return;p.alpha-=i.p;p.items[i.id]=today();if(i.t==='skin')p.skin=i.id;if(i.t==='wpn')p.wpn=i.id;if(i.t==='pet')p.pet=i.id;save();burst(40);toast('샀어요! '+i.n);showShop();});});
+  app.querySelectorAll('[data-eq]').forEach(b=>b.onclick=()=>{const i=SHOP.find(x=>x.id===b.dataset.eq);if(i.t==='skin')p.skin=i.id;if(i.t==='wpn')p.wpn=i.id;if(i.t==='pet')p.pet=i.id;save();showShop();});
+  app.querySelectorAll('[data-uneq]').forEach(a=>a.onclick=e=>{e.preventDefault();const k=a.dataset.uneq;if(k==='skin')p.skin='';if(k==='wpn')p.wpn='';if(k==='pet')p.pet='';save();showShop();});
+}
+
+let G=null;
+function startHunt(g){
+  const ws=gWords(g);if(ws.length<4){toast('단어가 4개 이상 있어야 해요');return;}
+  const h=huntState();
+  if(huntPlaysLeft()<=0){info('🎟️ 티켓이 없어요','하루 첫 판은 무료예요.<br>배틀을 한 번 끝낼 때마다 티켓 1장(하루 최대 3장)!');return;}
+  if(h.plays>0)h.tickets--;h.plays++;save();
+  const p=S.prof;
+  G={g,words:shuffle(ws).sort((a,b)=>a.mastery-b.mastery),qi:0,t:0,last:0,score:0,kills:0,hp:has('heart4')?4:3,maxhp:has('heart4')?4:3,
+     px:180,py:300,sp:2.2*(has('boots')?1.1:1),bul:[],en:[],drops:[],boss:null,critUntil:0,nextQuiz:20,quizN:0,quizOk:0,wrong:[],paused:false,over:false,inv:0,shot:0,spawn:0,jx:null,jc:null,keys:{},pet:p.pet?{x:150,y:320}:null,flash:0,bossBroken:0,shake:0};
+  view='hunt';
+  render(`<div class="top"><button class="ico" id="hquit">🏠 그만</button><span class="badge">🎮 브롤헌터스</span><span id="htime">3:00</span></div>
+    <div class="hud"><span>⭐ <span id="hscore">0</span></span><span id="hcrit" style="color:var(--yellow)"></span><span id="hhp"></span></div>
+    <canvas id="cv" width="360" height="480"></canvas>
+    <div class="sub" style="font-size:.9rem">화면을 누른 채 끌면 움직여요 · 공격은 자동 · PC는 방향키</div>`);
+  $('#hquit').onclick=()=>ask('이번 판을 그만둘까요? (점수는 지금까지 것만)',()=>endHunt());
+  const cv=$('#cv');
+  const pos=e=>{const r=cv.getBoundingClientRect(),t=e.touches?e.touches[0]:e;return {x:(t.clientX-r.left)*360/r.width,y:(t.clientY-r.top)*480/r.height};};
+  cv.ontouchstart=cv.onmousedown=e=>{e.preventDefault();G.jx=pos(e);G.jc=G.jx;};
+  cv.ontouchmove=cv.onmousemove=e=>{if(!G||!G.jx)return;e.preventDefault();G.jc=pos(e);};
+  cv.ontouchend=cv.onmouseup=cv.onmouseleave=()=>{if(G){G.jx=null;G.jc=null;}};
+  window.onkeydown=e=>{if(G)G.keys[e.key]=true;};window.onkeyup=e=>{if(G)G.keys[e.key]=false;};
+  Music.start();
+  G.timer=setInterval(huntLoop,1000/60);   // rAF 대신 타이머: 탭이 잠깐 가려져도 멈추지 않음
+}
+function huntLoop(){
+  if(!G||G.over)return;
+  if(!$('#cv')){endHunt();return;}   // 게임 화면을 벗어났으면 종료
+  const ts=Date.now();if(!G.last)G.last=ts;const dt=Math.min(0.05,(ts-G.last)/1000);G.last=ts;
+  if(!G.paused)huntTick(dt);
+  if(!G||G.over)return;
+  huntDraw();
+  if(G.t>=180)endHunt();
+}
+function huntTick(dt){
+  const g=G;g.t+=dt;
+  let dx=0,dy=0;
+  if(g.jx&&g.jc){dx=g.jc.x-g.jx.x;dy=g.jc.y-g.jx.y;const d=Math.hypot(dx,dy);if(d>8){dx/=d;dy/=d;}else{dx=dy=0;}}
+  if(g.keys.ArrowLeft||g.keys.a)dx=-1;if(g.keys.ArrowRight||g.keys.d)dx=1;if(g.keys.ArrowUp||g.keys.w)dy=-1;if(g.keys.ArrowDown||g.keys.s)dy=1;
+  g.px=Math.max(16,Math.min(344,g.px+dx*g.sp*60*dt));g.py=Math.max(16,Math.min(464,g.py+dy*g.sp*60*dt));
+  if(g.inv>0)g.inv-=dt;if(g.flash>0)g.flash-=dt;if(g.shake>0)g.shake-=dt;
+  g.spawn-=dt;
+  if(g.spawn<=0&&g.t<170){const rate=Math.max(0.55,1.3-g.t/200);g.spawn=rate;const side=rInt(4),big=g.t>50&&Math.random()<0.25;
+    g.en.push({x:side===0?-20:side===1?380:rInt(360),y:side===2?-20:side===3?500:rInt(480),r:big?16:11,hp:big?5:2,sp:big?0.7:1.05,big,ch:String.fromCharCode(97+rInt(26))});}
+  if(g.t>=150&&!g.boss&&!g.bossDone){g.boss={x:180,y:-40,r:30,hp:60,max:60,shield:true};toast('👑 스펠링 드래곤 등장! 퀴즈 3개로 방패를 깨자!');g.nextQuiz=g.t+1;}
+  g.en.forEach(e=>{const d=Math.hypot(g.px-e.x,g.py-e.y)||1;e.x+=(g.px-e.x)/d*e.sp*60*dt;e.y+=(g.py-e.y)/d*e.sp*60*dt;
+    if(d<e.r+12&&g.inv<=0){g.hp--;g.inv=1;g.shake=0.3;Music.sfx(false);e.hp=0;}});
+  if(g.boss){const b=g.boss,d=Math.hypot(g.px-b.x,g.py-b.y)||1;b.x+=(g.px-b.x)/d*0.5*60*dt;b.y+=(g.py-b.y)/d*0.5*60*dt;if(d<b.r+12&&g.inv<=0){g.hp--;g.inv=1.2;g.shake=0.4;Music.sfx(false);}}
+  if(g.hp<=0){endHunt();return;}
+  g.shot-=dt;
+  if(g.shot<=0){const tg=[...g.en,...(g.boss?[g.boss]:[])].map(e=>({e,d:Math.hypot(e.x-g.px,e.y-g.py)})).filter(o=>o.d<230).sort((a,b)=>a.d-b.d)[0];
+    if(tg){g.shot=0.38;const d=tg.d||1;g.bul.push({x:g.px,y:g.py,vx:(tg.e.x-g.px)/d*6.5,vy:(tg.e.y-g.py)/d*6.5,dmg:g.t<g.critUntil?3:1,life:1.2});}}
+  g.bul.forEach(b=>{b.x+=b.vx*60*dt;b.y+=b.vy*60*dt;b.life-=dt;
+    for(const e of g.en){if(e.hp>0&&Math.hypot(e.x-b.x,e.y-b.y)<e.r+5){e.hp-=b.dmg;b.life=0;if(e.hp<=0){g.score+=e.big?30:10;g.kills++;g.drops.push({x:e.x,y:e.y,t:8});}break;}}
+    if(g.boss&&b.life>0&&Math.hypot(g.boss.x-b.x,g.boss.y-b.y)<g.boss.r+5){b.life=0;if(!g.boss.shield){g.boss.hp-=b.dmg;if(g.boss.hp<=0){g.score+=500;g.kills++;g.boss=null;g.bossDone=true;burst(60);toast('🐉 보스 격파! +500');}}}});
+  g.bul=g.bul.filter(b=>b.life>0);g.en=g.en.filter(e=>e.hp>0);
+  if(g.pet){const d=Math.hypot(g.px-g.pet.x,g.py-g.pet.y);if(d>34){g.pet.x+=(g.px-g.pet.x)/d*2*60*dt;g.pet.y+=(g.py-g.pet.y)/d*2*60*dt;}}
+  g.drops.forEach(d=>{d.t-=dt;if(Math.hypot(d.x-g.px,d.y-g.py)<22||(g.pet&&Math.hypot(d.x-g.pet.x,d.y-g.pet.y)<60)){d.t=0;g.score+=5;}});
+  g.drops=g.drops.filter(d=>d.t>0);
+  if(g.t>=g.nextQuiz&&g.t<176&&!(g.boss&&!g.boss.shield))huntQuiz();
+  $('#hscore').textContent=g.score;$('#htime').textContent=Math.floor((180-g.t)/60)+':'+String(Math.floor(180-g.t)%60).padStart(2,'0');
+  $('#hhp').textContent='❤️'.repeat(Math.max(0,g.hp))+'🖤'.repeat(Math.max(0,g.maxhp-g.hp));$('#hcrit').textContent=g.t<g.critUntil?'💥 CRITICAL x3':'';
+}
+function huntDraw(){
+  const g=G,cv=$('#cv');if(!cv)return;const c=cv.getContext('2d');
+  c.save();if(g.shake>0)c.translate((Math.random()-.5)*8,(Math.random()-.5)*8);
+  c.fillStyle=g.flash>0?'#3b2a9e':'#1b2440';c.fillRect(-10,-10,380,500);
+  c.strokeStyle='rgba(255,255,255,.06)';for(let i=0;i<360;i+=40){c.beginPath();c.moveTo(i,0);c.lineTo(i,480);c.stroke();}for(let i=0;i<480;i+=40){c.beginPath();c.moveTo(0,i);c.lineTo(360,i);c.stroke();}
+  g.drops.forEach(d=>{c.font='16px serif';c.fillText('⭐',d.x-8,d.y+6);});
+  g.en.forEach(e=>{c.fillStyle=e.big?'#9b59b6':'#e67e22';c.beginPath();c.arc(e.x,e.y,e.r,0,7);c.fill();c.fillStyle='#fff';c.beginPath();c.arc(e.x-4,e.y-3,2.5,0,7);c.arc(e.x+4,e.y-3,2.5,0,7);c.fill();c.fillStyle='#1a1a1a';c.font='bold 11px Menlo';c.fillText(e.ch,e.x-3,e.y+7);});
+  if(g.boss){const b=g.boss;c.fillStyle='#8e44ad';c.beginPath();c.arc(b.x,b.y,b.r,0,7);c.fill();c.font='22px serif';c.fillText('👑',b.x-11,b.y-b.r+2);c.fillStyle='#fff';c.beginPath();c.arc(b.x-9,b.y-5,4,0,7);c.arc(b.x+9,b.y-5,4,0,7);c.fill();
+    if(b.shield){c.strokeStyle='rgba(63,182,255,.9)';c.lineWidth=3;c.beginPath();c.arc(b.x,b.y,b.r+8,0,7);c.stroke();c.fillStyle='#fff';c.font='bold 12px Jua';c.fillText('🛡️ '+g.bossBroken+'/3',b.x-22,b.y+b.r+18);}
+    else{c.fillStyle='#333';c.fillRect(b.x-30,b.y+b.r+6,60,6);c.fillStyle='#ff4d4d';c.fillRect(b.x-30,b.y+b.r+6,60*b.hp/b.max,6);}}
+  const wpn=S.prof.wpn;g.bul.forEach(b=>{if(wpn==='wpn_bolt'){c.font='16px serif';c.fillText('⚡',b.x-8,b.y+6);}else if(wpn==='wpn_beaker'){c.fillStyle='#2ecc71';c.beginPath();c.arc(b.x,b.y,5,0,7);c.fill();}else{c.save();c.translate(b.x,b.y);c.rotate(Math.atan2(b.vy,b.vx));c.fillStyle=b.dmg>1?'#ff4d4d':'#7ed957';c.fillRect(-7,-2,14,4);c.fillStyle='#f6d3b3';c.fillRect(7,-2,3,4);c.restore();}});
+  if(g.pet){c.font='22px serif';c.fillText('🐱',g.pet.x-11,g.pet.y+8);}
+  if(!(g.inv>0&&Math.floor(g.inv*10)%2===0)){if(g.t<g.critUntil){c.shadowColor='#ffd23f';c.shadowBlur=18;}drawPix(c,g.px-16,g.py-20,2,S.prof.skin);c.shadowBlur=0;}
+  if(g.jx&&g.jc){c.strokeStyle='rgba(255,255,255,.35)';c.lineWidth=2;c.beginPath();c.arc(g.jx.x,g.jx.y,28,0,7);c.stroke();c.fillStyle='rgba(255,255,255,.5)';c.beginPath();c.arc(g.jc.x,g.jc.y,12,0,7);c.fill();}
+  c.restore();
+}
+function huntQuiz(){
+  const g=G;g.paused=true;g.nextQuiz=g.t+(g.boss&&g.boss.shield?9:27);g.quizN++;
+  const w=g.words[g.qi%g.words.length];g.qi++;
+  const kind=w.mastery>=3?pick(['english','spot']):pick(['meaning','english']);
+  let prompt,opts;
+  if(kind==='meaning'){prompt=`<div class="word" style="font-size:2.4rem">${esc(w.en)}</div>`;opts=optionsFor(w,'ko').map(o=>[o.ko,o.id===w.id]);speak(w.en);}
+  else if(kind==='english'){prompt=`<div class="ko" style="color:var(--ink);text-shadow:none">${esc(w.ko)}</div>`;opts=optionsFor(w,'en').map(o=>[o.en,o.id===w.id]);}
+  else{prompt=`<div class="ko" style="color:var(--ink);text-shadow:none">${esc(w.ko)}</div><div class="lbl">진짜 철자는?</div>`;opts=shuffle([w.en,...decoys(w.en,3,w.lastMiss)]).map(o=>[o,o===w.en]);}
+  const q=$('#qz');q.innerHTML=`<div class="card"><div class="badge" style="margin-bottom:6px">⚡ 퀴즈 타임!</div>${prompt}<div class="qbar"><i id="qb" style="width:100%"></i></div>
+    <div class="opts">${opts.map((o,i)=>`<button class="opt ${kind!=='meaning'?'en':''}" data-i="${i}" style="padding:12px">${esc(o[0])}</button>`).join('')}</div><div id="qfb"></div></div>`;
+  q.classList.add('show');
+  let done=false;const t0=Date.now();
+  const tm=setInterval(()=>{const left=5-(Date.now()-t0)/1000;const qb=$('#qb');if(qb)qb.style.width=Math.max(0,left/5*100)+'%';if(left<=0&&!done)finish(false,true);},50);
+  const finish=(ok,timeout)=>{done=true;clearInterval(tm);
+    q.querySelectorAll('.opt').forEach((b,i)=>{b.disabled=true;if(opts[i][1])b.classList.add('ok');});
+    if(ok){g.quizOk++;g.critUntil=g.t+(has('crit7')?7:5);g.flash=0.4;if(g.hp<g.maxhp)g.hp++;if(g.boss&&g.boss.shield){g.bossBroken++;if(g.bossBroken>=3){g.boss.shield=false;toast('🛡️ 방패가 깨졌다! 공격!');}}
+      $('#qfb').innerHTML='<div class="good">💥 CRITICAL! '+pick(PRAISE)+'</div>';burst(30);Music.sfx(true);speak(w.en);}
+    else{g.wrong.push(w.id);g.words.push(w);$('#qfb').innerHTML=`<div class="wrongmsg" style="color:var(--ink);text-shadow:none">${timeout?'⏰ 시간 초과! ':''}정답은 <b>${esc(w.en)}</b> · ${esc(w.ko)}</div>`;Music.sfx(false);speak(w.en);}
+    setTimeout(()=>{q.classList.remove('show');if(G){G.paused=false;G.last=0;}},ok?900:1600);};
+  q.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{if(done)return;const ok=opts[+b.dataset.i][1];if(!ok)b.classList.add('bad');finish(ok,false);});
+}
+function endHunt(){
+  const g=G;if(!g||g.over)return;g.over=true;clearInterval(g.timer);$('#qz').classList.remove('show');window.onkeydown=window.onkeyup=null;
+  const p=S.prof,h=huntState(),xp=Math.min(100,Math.floor(g.score/20)),perfect=g.quizN>=3&&g.quizOk===g.quizN;
+  let alpha=0;if(perfect&&h.perfect!==today()){alpha=1;h.perfect=today();p.alpha++;p.alphaTotal++;}
+  p.xp+=xp;p.huntBest=Math.max(p.huntBest||0,g.score);p.huntPlays=(p.huntPlays||0)+1;
+  g.wrong.forEach(id=>{const w=W(id);if(w)w.wrongs=(w.wrongs||0)+1;});
+  save();
+  const wrongWords=[...new Set(g.wrong)].map(W).filter(Boolean),survived=g.hp>0&&g.t>=180;
+  view='home';
+  if(survived){burst(50);setTimeout(()=>burst(50),400);}
+  render(`
+    <h1>${survived?'SURVIVED!':'GAME<br>OVER'}<small>🎮 ${esc(g.g||'전체')} 사냥 끝!</small></h1>
+    <div class="card tilt"><div class="row" style="justify-content:space-around">
+      <div><div class="lbl">점수</div><div class="big">${g.score}</div></div>
+      <div><div class="lbl">잡은 몬스터</div><div class="big" style="color:var(--blue)">${g.kills}</div></div>
+      <div><div class="lbl">퀴즈</div><div class="big" style="color:var(--green)">${g.quizOk}<span style="font-size:1.2rem;color:var(--muted)">/${g.quizN}</span></div></div>
+    </div>${p.huntBest===g.score&&g.score>0?'<div class="sub">🏆 최고 기록!</div>':''}</div>
+    <div class="card" style="text-align:left;padding:12px 18px"><div class="lbl" style="text-align:center;margin-bottom:4px">얻은 것</div>
+      <div class="earn"><span>경험치</span><b>+${xp} XP</b></div>
+      ${alpha?'<div class="earn"><span>🎯 퍼펙트 헌터! (퀴즈 전부 정답)</span><b style="color:var(--pink)">+1 🔺</b></div>':'<div class="earn"><span class="muted">퀴즈를 전부 맞히면 하루 한 번 🔺1</span></div>'}
+      <div class="earn"><span>남은 판</span><b style="font-family:Jua;font-size:1.1rem">${huntPlaysLeft()}판 (배틀 1회 = 티켓 1장)</b></div></div>
+    ${wrongWords.length?`<h2>다시 볼 단어</h2>${wrongWords.map(w=>`<div class="wl" data-say="${esc(w.en)}"><span><b>${esc(w.en)}</b> <span class="muted">${esc(w.ko)}</span></span></div>`).join('')}`:''}
+    <button class="btn primary" onclick="showHome()">홈으로</button>
+    ${huntPlaysLeft()>0?`<button class="btn blue" onclick="startHunt('${esc(g.g)}')">🎮 한 판 더</button>`:''}`);
+  G=null;
+}
+
 // ── 부모님 화면 ───────────────────────────────────────
 function showGate(){
   view='gate';
@@ -783,6 +1011,7 @@ function showParent(){
       <div>레벨 <b>Lv ${lvl(S.prof.xp).level}</b> · ${esc(rankOf(lvl(S.prof.xp).level)[1])} · XP ${S.prof.xp}</div>
       <div>알파 <b style="color:var(--pink)">🔺 ${S.prof.alpha}</b> · 연속 학습 <b>${streak()}일</b></div>
       <div>보스전 클리어 ${S.prof.bossWins}회 · 무실점 ${S.prof.perfects}회 · 최고 콤보 ${S.prof.bestCombo}</div>
+      <div>🎮 브롤헌터스 ${S.prof.huntPlays||0}판 · 최고 ${S.prof.huntBest||0}점 · 오늘 남은 ${huntPlaysLeft()}판 · 아이템 ${Object.keys(S.prof.items||{}).length}개</div>
       <div>뱃지 시즌 ${S.prof.season} · ${Object.keys(S.prof.badges).length}/${BADGES.length}개 (완성한 시즌 ${S.prof.seasonsDone}) · 누적 정답 ${S.prof.correctTotal}개 · 누적 알파 ${S.prof.alphaTotal}</div>
     </div></div>
     <h2>단어 넣기</h2>
