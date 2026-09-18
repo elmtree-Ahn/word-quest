@@ -903,15 +903,17 @@ function mkChar(c,player,name){
   const lab=mkLabel(name||'',player);lab.sp.position.y=2.75;g.add(lab.sp);g.userData.lab=lab;
   g.userData.mats=[];g.traverse(o=>{if(o.isMesh&&o.material&&o.material.isMeshLambertMaterial)g.userData.mats.push(o.material);});
   g.userData.body=body;
+  g.scale.set(CS,CS,CS);
   return g;
 }
+const CS=.78;   // 캐릭터 기본 크기
 // 걷기 애니메이션 + 피격 반응 (빨갛게 번쩍 + 찌그러짐 + 살짝 밀림)
 function animChar(o,moving,dt){
   const u=o.m.userData;if(!u.legs)return;
   if(moving){o.walk=(o.walk||0)+dt*11;const s=Math.sin(o.walk);u.legs[0].rotation.x=s*.7;u.legs[1].rotation.x=-s*.7;u.arms[0].rotation.x=-s*.6;u.arms[1].rotation.x=s*.6;u.body.position.y=.7+Math.abs(Math.cos(o.walk))*.06;}
   else{o.walk=0;u.legs.forEach(l=>l.rotation.x*=.8);u.arms.forEach(a=>a.rotation.x*=.8);u.body.position.y=.7;}
-  if(o.hitT>0){o.hitT-=dt;const k=o.hitT/.22;o.m.scale.set(1+.18*k,1-.2*k,1+.18*k);u.mats.forEach(m=>m.emissive.setHex(0xff2222));o.x+=(o.kx||0)*dt*4;o.z+=(o.kz||0)*dt*4;if(blocked(o.x,o.z,.5)){o.x-=(o.kx||0)*dt*4;o.z-=(o.kz||0)*dt*4;}o.m.position.set(o.x,0,o.z);}
-  else{o.m.scale.set(1,1,1);u.mats.forEach(m=>m.emissive.setHex(0x000000));}
+  if(o.hitT>0){o.hitT-=dt;const k=o.hitT/.22;o.m.scale.set(CS*(1+.18*k),CS*(1-.2*k),CS*(1+.18*k));u.mats.forEach(m=>m.emissive.setHex(0xff2222));o.x+=(o.kx||0)*dt*4;o.z+=(o.kz||0)*dt*4;if(blocked(o.x,o.z,.5)){o.x-=(o.kx||0)*dt*4;o.z-=(o.kz||0)*dt*4;}o.m.position.set(o.x,0,o.z);}
+  else{o.m.scale.set(CS,CS,CS);u.mats.forEach(m=>m.emissive.setHex(0x000000));}
 }
 function knock(o,fromX,fromZ){const dx=o.x-fromX,dz=o.z-fromZ,d=Math.hypot(dx,dz)||1;o.hitT=.22;o.kx=dx/d;o.kz=dz/d;}
 // 머리 위 이름표 + 체력 (캔버스 스프라이트)
@@ -951,7 +953,7 @@ function showHuntSetup(g){
     <h1 style="font-size:2.2rem">BRAWL<br>HUNTERS<small>난이도를 골라요</small></h1>
     <div class="card" style="text-align:left;padding:10px 16px;display:flex;gap:12px;align-items:center"><div id="av"></div><div><div>${w.e} ${w.n} · ${sp.e} ${sp.n}</div><div class="lbl">총·대포는 🛒 알파 상점에서 바꿔요</div></div></div>
     ${Object.keys(DIFF).map(k=>`<button class="btn ${k==='hard'?'danger':k==='normal'?'blue':''}" data-d="${k}" style="display:flex;justify-content:space-between;align-items:center"><span>${DIFF[k].e} ${DIFF[k].n}</span><small style="font-size:.9rem;-webkit-text-stroke:0">${DIFF[k].d}</small></button>`).join('')}
-    <div class="sub" style="font-size:.9rem">태블릿: 왼쪽 끌기 = 이동 · 오른쪽 끌기 = 조준, 놓으면 발사 · 탭 = 자동 조준<br>PC: 화살표 = 이동 · 스페이스 = 발사 · 엔터 = 대포</div>`);
+    <div class="sub" style="font-size:.9rem">게임은 전체화면·가로로 열려요 (기기를 가로로 잡으세요)<br>태블릿: 왼쪽 아무 데나 대고 끌기 = 이동 · 오른쪽 끌기 = 조준, 놓으면 발사 · 탭 = 자동 조준<br>PC: 화살표 = 이동 · 스페이스 = 발사 · 엔터 = 대포</div>`);
   $('#av').appendChild(avatarCanvas());
   app.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>startHunt(g,b.dataset.d));
 }
@@ -964,7 +966,7 @@ function startHunt(g,dk){
   const ws=gWords(g),h=huntState(),D=DIFF[dk]||DIFF.normal;
   if(h.plays>0)h.tickets--;h.plays++;save();
   view='hunt';
-  render(`<div id="stage" style="position:relative;margin:-4px -16px 0;height:calc(100vh - 8px);overflow:hidden;background:#0f1a2e">
+  render(`<div id="stage" style="position:fixed;inset:0;overflow:hidden;background:#0f1a2e;z-index:50">
     <div id="hud" style="position:absolute;inset:0;pointer-events:none;font-family:'Lilita One';color:#fff;text-shadow:0 2px 0 #141433">
       <div style="position:absolute;top:8px;left:8px;display:flex;align-items:center;gap:6px"><div class="hex" style="background:linear-gradient(#c05cff,#7b2fd6)"><span id="hgem">0</span></div><div style="width:120px;height:26px;background:#141433;border:3px solid #0a0a2a;border-radius:6px;overflow:hidden"><div id="hgembar" style="height:100%;width:0;background:linear-gradient(90deg,#2f8bff,#7fd0ff)"></div></div></div>
       <div style="position:absolute;top:44px;left:8px;display:flex;gap:6px;align-items:center"><div class="pcard" style="border-color:#ffd23f">👦<small>시온</small></div><div class="pcard" style="border-color:#ff4d4d">💀<small>KO <span id="hkill">0</span></small></div></div>
@@ -974,12 +976,12 @@ function startHunt(g,dk){
       <div id="hscore" style="display:none">0</div>
       <div style="position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 58%,rgba(10,10,40,.38) 100%)"></div>
       <button id="hquit" style="position:absolute;top:44px;right:8px;pointer-events:auto" class="ico">🏠</button>
-      <div id="joy" style="position:absolute;left:26px;bottom:34px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.12);border:3px solid rgba(255,255,255,.35)"><div id="joyk" style="position:absolute;left:35px;top:35px;width:50px;height:50px;border-radius:50%;background:radial-gradient(#7fd0ff,#2f6fd6);border:3px solid #141433"></div></div>
+      <div id="joy" style="display:none;position:absolute;left:26px;top:34px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.14);border:3px solid rgba(255,255,255,.4)"><div id="joyk" style="position:absolute;left:35px;top:35px;width:50px;height:50px;border-radius:50%;background:radial-gradient(#7fd0ff,#2f6fd6);border:3px solid #141433"></div></div>
       <div id="hammo" style="position:absolute;bottom:150px;right:28px;display:flex;flex-direction:column;gap:4px;align-items:flex-end"></div>
       <div id="hatk" style="position:absolute;right:22px;bottom:30px;width:104px;height:104px;border-radius:50%;border:5px solid #141433;background:radial-gradient(#ff8a80,#e53935 60%,#b71c1c);display:flex;align-items:center;justify-content:center;font-size:2.2rem;pointer-events:auto;box-shadow:0 6px 0 #141433"></div>
       <div id="hsuper" style="position:absolute;right:138px;bottom:44px;width:74px;height:74px;border-radius:50%;border:4px solid #141433;background:conic-gradient(#ffd23f 0%,#3b3b5c 0%);display:flex;align-items:center;justify-content:center;font-size:1.7rem;pointer-events:auto;box-shadow:0 5px 0 #141433"></div>
     </div></div>`);
-  const stage=$('#stage'),Wd=stage.clientWidth,Ht=stage.clientHeight;
+  const stage=$('#stage');let Wd=innerWidth,Ht=innerHeight;
   const R=new THREE.WebGLRenderer({antialias:true});R.setSize(Wd,Ht);R.setPixelRatio(Math.min(2,devicePixelRatio||1));R.shadowMap.enabled=true;R.shadowMap.type=THREE.PCFSoftShadowMap;R.toneMapping=THREE.ACESFilmicToneMapping;R.toneMappingExposure=1.18;if(THREE.SRGBColorSpace)R.outputColorSpace=THREE.SRGBColorSpace;R.domElement.style.cssText='position:absolute;inset:0;touch-action:none';stage.insertBefore(R.domElement,stage.firstChild);
   const sc=new THREE.Scene();sc.background=new THREE.Color(0x1f8fb5);
   const cam=new THREE.PerspectiveCamera(48,Wd/Ht,.1,120);
@@ -1003,24 +1005,34 @@ function startHunt(g,dk){
   // 보석 (중앙에서 솟아남)
   const gemGeo=new THREE.OctahedronGeometry(.45,0),gemM=new THREE.MeshLambertMaterial({color:0xb14cff,emissive:0x5a1a9e});
   const W=curWeapon(),SP=curSuper(),skin=SKIN3[S.prof.skin]||SKIN3.base;
-  const pl={m:mkChar(skin,true,'시온'),x:0,z:AR-4,hp:has('heart4')?130:100,maxhp:has('heart4')?130:100,lives:3,ammo:W.ammo,rel:0,lastHit:-9,dead:0,inv:0,face:0};pl.m.position.set(pl.x,0,pl.z);sc.add(pl.m);
+  const pl={m:mkChar(skin,true,'시온'),x:0,z:AR-9,hp:has('heart4')?130:100,maxhp:has('heart4')?130:100,lives:3,ammo:W.ammo,rel:0,lastHit:-9,dead:0,inv:0,face:0};pl.m.position.set(pl.x,0,pl.z);sc.add(pl.m);
   const aimLine=new THREE.Mesh(new THREE.BoxGeometry(.12,.02,W.range),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.35}));aimLine.visible=false;sc.add(aimLine);
   G={g,D,dk,ws:shuffle(ws).sort((a,b)=>a.mastery-b.mastery),qi:0,R,sc,cam,pl,W,SP,bots:[],pr:[],fx:[],gems:[],gemT:3,gemGeo,gemM,myGems:0,t:0,last:0,score:0,kills:0,deaths:0,sup:0,critUntil:0,nextQuiz:28,quizN:0,quizOk:0,wrong:[],paused:false,over:false,keys:{},mv:null,am:null,aimLine,msgT:0,timer:null,mouse:null};
   const cols=[0xe74c3c,0x9b59b6,0x3498db,0xf39c12,0x1abc9c,0xe84393,0x2d3436,0x6c5ce7];
   for(let i=0;i<D.bots;i++)spawnBot(i,cols[i%cols.length],true);
-  const cv=R.domElement,rect=()=>cv.getBoundingClientRect();
-  const tp=t=>{const r=rect();return {x:t.clientX-r.left,y:t.clientY-r.top};};
-  const onStart=e=>{e.preventDefault();for(const t of e.changedTouches){const p=tp(t);if(p.x<Wd/2&&!G.mv)G.mv={id:t.identifier,ox:p.x,oy:p.y,x:p.x,y:p.y};else if(p.x>=Wd/2&&!G.am)G.am={id:t.identifier,ox:p.x,oy:p.y,x:p.x,y:p.y,t0:Date.now()};}};
+  const cv=R.domElement;
+  const tp=t=>G.rot?{x:t.clientY,y:innerWidth-t.clientX}:{x:t.clientX,y:t.clientY};   // 화면을 90도 돌렸으면 좌표도 돌림
+  const joy=$('#joy');
+  const onStart=e=>{e.preventDefault();for(const t of e.changedTouches){const p=tp(t);if(p.x<G.Wd/2&&!G.mv){G.mv={id:t.identifier,ox:p.x,oy:p.y,x:p.x,y:p.y};joy.style.display='block';joy.style.left=(p.x-60)+'px';joy.style.top=(p.y-60)+'px';}else if(p.x>=G.Wd/2&&!G.am)G.am={id:t.identifier,ox:p.x,oy:p.y,x:p.x,y:p.y,t0:Date.now()};}};
   const onMove=e=>{e.preventDefault();for(const t of e.changedTouches){const p=tp(t);if(G.mv&&t.identifier===G.mv.id){G.mv.x=p.x;G.mv.y=p.y;}if(G.am&&t.identifier===G.am.id){G.am.x=p.x;G.am.y=p.y;}}};
-  const endT=e=>{for(const t of e.changedTouches){if(G.mv&&t.identifier===G.mv.id)G.mv=null;if(G.am&&t.identifier===G.am.id){const a=G.am;G.am=null;const dx=a.x-a.ox,dy=a.y-a.oy;if(Math.hypot(dx,dy)<14)fireAuto();else fireDir(Math.atan2(dx,-dy));}}};
+  const endT=e=>{for(const t of e.changedTouches){if(G.mv&&t.identifier===G.mv.id){G.mv=null;joy.style.display='none';}if(G.am&&t.identifier===G.am.id){const a=G.am;G.am=null;const dx=a.x-a.ox,dy=a.y-a.oy;if(Math.hypot(dx,dy)<14)fireAuto();else fireDir(Math.atan2(dx,-dy));}}};
   [cv,$('#hatk')].forEach(el=>{el.addEventListener('touchstart',onStart,{passive:false});el.addEventListener('touchmove',onMove,{passive:false});el.addEventListener('touchend',endT);el.addEventListener('touchcancel',endT);});
   $('#hatk').addEventListener('mousedown',e=>{e.stopPropagation();fireAuto();});
-  cv.addEventListener('mousemove',e=>{G.mouse=tp(e);});cv.addEventListener('mousedown',e=>{const p=tp(e);const dx=p.x-Wd/2,dy=p.y-Ht*.62;fireDir(Math.atan2(dx,-dy));});
+  cv.addEventListener('mousemove',e=>{G.mouse=tp(e);});cv.addEventListener('mousedown',e=>{const p=tp(e);const dx=p.x-G.Wd/2,dy=p.y-G.Ht*.62;fireDir(Math.atan2(dx,-dy));});
   window.onkeydown=e=>{if(!G)return;const k=e.key.toLowerCase();G.keys[k]=true;if(k===' '){e.preventDefault();if(!e.repeat)fireAuto();}if(k==='enter'){e.preventDefault();if(!e.repeat)useSuper();}};window.onkeyup=e=>{if(G)G.keys[e.key.toLowerCase()]=false;};
   $('#hsuper').onclick=useSuper;$('#hquit').onclick=()=>{G.paused=true;ask('이번 판을 그만둘까요? (점수는 지금까지 것만)',()=>endHunt());setTimeout(()=>{const m=$('#m-no');if(m)m.onclick=()=>{$('#modal').classList.remove('show');if(G){G.paused=false;G.last=0;}};},0);};
-  window.onresize=()=>{if(!G)return;const w=stage.clientWidth,h=stage.clientHeight;R.setSize(w,h);cam.aspect=w/h;cam.updateProjectionMatrix();};
+  G.Wd=Wd;G.Ht=Ht;G.rot=false;
+  layoutStage();window.onresize=()=>setTimeout(layoutStage,100);
+  try{const fs=document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen({navigationUI:'hide'});Promise.resolve(fs).catch(()=>{}).then(()=>{try{if(screen.orientation&&screen.orientation.lock)screen.orientation.lock('landscape').catch(()=>{});}catch(e){}setTimeout(layoutStage,400);});}catch(e){}
   Music.start();huntMsg('중앙에서 💎보석을 모으고 3분 버텨라!',3000);
   G.timer=setInterval(huntLoop,1000/60);
+}
+// 전체화면 + 가로: 기기가 가로 잠금을 거부하면(아이패드 등) 화면 자체를 90도 돌려서 가로로
+function layoutStage(){
+  const st=$('#stage');if(!st||!G)return;const port=innerHeight>innerWidth;G.rot=port;
+  if(port){st.style.cssText='position:fixed;left:0;top:0;width:'+innerHeight+'px;height:'+innerWidth+'px;transform-origin:0 0;transform:rotate(90deg) translate(0,-100%);overflow:hidden;background:#0f1a2e;z-index:50';G.Wd=innerHeight;G.Ht=innerWidth;}
+  else{st.style.cssText='position:fixed;inset:0;overflow:hidden;background:#0f1a2e;z-index:50';G.Wd=innerWidth;G.Ht=innerHeight;}
+  G.R.setSize(G.Wd,G.Ht);G.cam.aspect=G.Wd/G.Ht;G.cam.updateProjectionMatrix();
 }
 function huntMsg(t,ms=1600){const m=$('#hmsg');if(!m)return;m.textContent=t;m.style.animation='none';void m.offsetWidth;m.style.animation='pop .35s';G.msgT=G.t+ms/1000;}
 function spawnBot(i,col,first){
@@ -1055,12 +1067,12 @@ function huntLoop(){
   const ts=Date.now();if(!G.last)G.last=ts;const dt=Math.min(.05,(ts-G.last)/1000);G.last=ts;
   if(!G.paused)huntTick(dt);
   if(!G||G.over)return;
-  const p=G.pl,port=G.R.domElement.height>G.R.domElement.width,sk=G.shake>0?(G.shake-=0.016,(Math.random()-.5)*.5):0;G.cam.position.set(p.x+sk,port?34:26,p.z+(port?17:14)+sk);G.cam.lookAt(p.x,0,p.z-2);G.R.render(G.sc,G.cam);
+  const p=G.pl,sk=G.shake>0?(G.shake-=0.016,(Math.random()-.5)*.5):0;G.cam.position.set(p.x+sk,30,p.z+15+sk);G.cam.lookAt(p.x,0,p.z);G.R.render(G.sc,G.cam);   // 항상 내 캐릭터가 화면 가운데
   if(G.t>=180)endHunt();
 }
 function huntTick(dt){
   const g=G,p=g.pl,D=g.D,W=g.W;g.t+=dt;
-  if(p.dead>0){p.dead-=dt;if(p.dead<=0){p.dead=0;p.hp=p.maxhp;p.x=(Math.random()<.5?-1:1)*(AR-4);p.z=AR-4;p.inv=2;p.m.visible=true;p.ammo=W.ammo;}}
+  if(p.dead>0){p.dead-=dt;if(p.dead<=0){p.dead=0;p.hp=p.maxhp;p.x=(Math.random()<.5?-1:1)*(AR-9);p.z=AR-9;p.inv=2;p.m.visible=true;p.ammo=W.ammo;}}
   else{
     let dx=0,dz=0;
     if(g.mv){dx=g.mv.x-g.mv.ox;dz=g.mv.y-g.mv.oy;const d=Math.hypot(dx,dz);if(d>6){const k=Math.min(1,d/50);dx=dx/d*k;dz=dz/d*k;}else dx=dz=0;}
@@ -1131,7 +1143,7 @@ function huntQuiz(){
   if(kind==='meaning'){prompt=`<div class="word" style="font-size:2.4rem">${esc(w.en)}</div>`;opts=optionsFor(w,'ko').map(o=>[o.ko,o.id===w.id]);speak(w.en);}
   else if(kind==='english'){prompt=`<div class="ko" style="color:var(--ink);text-shadow:none">${esc(w.ko)}</div>`;opts=optionsFor(w,'en').map(o=>[o.en,o.id===w.id]);}
   else{prompt=`<div class="ko" style="color:var(--ink);text-shadow:none">${esc(w.ko)}</div><div class="lbl">진짜 철자는?</div>`;opts=shuffle([w.en,...decoys(w.en,3,w.lastMiss)]).map(o=>[o,o===w.en]);}
-  const q=$('#qz');q.innerHTML=`<div class="card"><div class="badge" style="margin-bottom:6px">⚡ 퀴즈 타임! 맞히면 크리티컬 + 대포 충전</div>${prompt}<div class="qbar"><i id="qb" style="width:100%"></i></div>
+  const q=$('#qz');q.style.transform=g.rot?'rotate(90deg)':'';q.style.zIndex=60;q.innerHTML=`<div class="card"><div class="badge" style="margin-bottom:6px">⚡ 퀴즈 타임! 맞히면 크리티컬 + 대포 충전</div>${prompt}<div class="qbar"><i id="qb" style="width:100%"></i></div>
     <div class="opts">${opts.map((o,i)=>`<button class="opt ${kind!=='meaning'?'en':''}" data-i="${i}" style="padding:12px">${esc(o[0])}</button>`).join('')}</div><div id="qfb"></div></div>`;
   q.classList.add('show');
   let done=false;const t0=Date.now();
@@ -1146,6 +1158,7 @@ function huntQuiz(){
 }
 function endHunt(){
   const g=G;if(!g||g.over)return;g.over=true;clearInterval(g.timer);$('#qz').classList.remove('show');$('#modal').classList.remove('show');window.onkeydown=window.onkeyup=null;window.onresize=null;
+  try{if(screen.orientation&&screen.orientation.unlock)screen.orientation.unlock();}catch(e){}if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});
   try{g.R.dispose();}catch(e){}
   const p=S.prof,h=huntState(),survived=g.pl.lives>0&&g.t>=180,xp=Math.min(150,Math.floor(g.score/10)),perfect=g.quizN>=3&&g.quizOk===g.quizN;
   let alpha=0,notes=[];
