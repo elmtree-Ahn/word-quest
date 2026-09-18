@@ -929,9 +929,22 @@ function dmgNum(x,z,v,me){const cv=document.createElement('canvas');cv.width=128
   const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cv),transparent:true,depthTest:false}));sp.scale.set(1.6,.8,1);sp.position.set(x+(Math.random()-.5)*.6,2.6,z);G.sc.add(sp);G.fx.push({kind:'num',m:sp,t:.8});}
 function puff(x,z,col,n=6){for(let i=0;i<n;i++){const m=new THREE.Mesh(new THREE.SphereGeometry(.12,6,5),new THREE.MeshBasicMaterial({color:col}));m.position.set(x,.9,z);G.sc.add(m);const a=Math.random()*Math.PI*2,v=2+Math.random()*3;G.fx.push({kind:'p',m,t:.35,vx:Math.cos(a)*v,vz:Math.sin(a)*v,vy:2+Math.random()*2});}}
 let G=null,G_bushMats=[];
+// 티켓 없음 팝업: 🎟️ 그림을 누르면 비밀번호(부모용) → 맞으면 티켓 1장
+function noTicket(g){
+  const m=$('#modal');
+  m.innerHTML=`<div class="card"><div id="tk" style="font-size:3.2rem;cursor:pointer;line-height:1.1">🎟️</div><div style="font-size:1.4rem;margin:4px 0 8px">티켓이 없어요</div>
+    <div style="font-size:1.05rem;line-height:1.5;color:var(--muted)">하루 첫 판은 무료예요.<br>배틀을 한 번 끝낼 때마다 티켓 1장(하루 최대 3장)!</div>
+    <div id="tkpw" style="display:none;margin-top:10px"><input id="tkin" class="inp" type="password" style="font-size:1.2rem;font-family:Jua" placeholder="부모님 비밀번호"><button class="btn blue" id="tkok" style="margin:8px 0 0">티켓 받기</button></div>
+    <button class="btn" id="m-no" style="margin-top:12px">알겠어요</button></div>`;
+  m.classList.add('show');
+  $('#m-no').onclick=()=>m.classList.remove('show');
+  $('#tk').onclick=()=>{$('#tkpw').style.display='block';$('#tkin').focus();};
+  const go=()=>{if($('#tkin').value!==RESET_PW){toast('비밀번호가 달라요');$('#tkin').value='';return;}const h=huntState();h.tickets++;save();m.classList.remove('show');toast('🎟️ 티켓 1장 받았어요');showHuntSetup(g);};
+  $('#tkok').onclick=go;$('#tkin').onkeydown=e=>{if(e.key==='Enter')go();};
+}
 function showHuntSetup(g){
   const ws=gWords(g);if(ws.length<4){toast('단어가 4개 이상 있어야 해요');return;}
-  if(huntPlaysLeft()<=0){info('🎟️ 티켓이 없어요','하루 첫 판은 무료예요.<br>배틀을 한 번 끝낼 때마다 티켓 1장(하루 최대 3장)!');return;}
+  if(huntPlaysLeft()<=0){noTicket(g);return;}
   if(!window.THREE){info('3D를 불러오지 못했어요','인터넷 연결을 확인하고 새로고침해 주세요.');return;}
   view='home';const w=curWeapon(),sp=curSuper();
   render(`<div class="top"><button class="ico" onclick="showHome()">🏠 홈</button><span class="badge">🎮 브롤헌터스</span><span>남은 ${huntPlaysLeft()}판</span></div>
