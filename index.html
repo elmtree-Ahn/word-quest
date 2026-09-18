@@ -56,6 +56,10 @@ h2{font-size:1.15rem;margin:26px 0 10px;color:var(--yellow);text-shadow:0 2px 0 
 .opt:active{transform:translateY(4px);box-shadow:0 2px 0 var(--ink)}
 .opt.ok{background:var(--green);color:#fff;text-shadow:0 2px 0 var(--ink);animation:pop .35s}
 .opt.bad{background:var(--red);color:#fff;text-shadow:0 2px 0 var(--ink);animation:shake .4s}
+.opt.sel{background:var(--yellow);transform:translateY(3px);box-shadow:0 3px 0 var(--ink)}
+.submit{margin-top:18px;font-size:1.5rem}
+.stat{cursor:pointer;border-bottom:2px dotted #b8bce0}
+.famh{margin:18px 0 8px;font-size:1.1rem;color:var(--yellow);text-shadow:0 2px 0 var(--ink)}
 .slots{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;margin:10px 0 26px;min-height:54px}
 .slot{width:42px;height:54px;border-radius:12px;background:#fff;border:3px solid var(--ink);display:flex;align-items:center;justify-content:center;font-family:'Lilita One';font-size:1.7rem;color:var(--ink);box-shadow:0 4px 0 var(--ink)}
 .slot.fixed{background:var(--pale);color:var(--muted)}
@@ -303,6 +307,16 @@ function ask(msg,onYes){
   $('#m-yes').onclick=()=>{m.classList.remove('show');onYes();};
   $('#m-no').onclick=()=>m.classList.remove('show');
 }
+function info(title,body){const m=$('#modal');m.innerHTML=`<div class="card"><div style="font-size:1.5rem;margin-bottom:8px">${title}</div><div style="font-size:1.1rem;line-height:1.5;color:var(--muted)">${body}</div><button class="btn blue" id="m-no" style="margin-top:14px">알겠어요</button></div>`;m.classList.add('show');$('#m-no').onclick=()=>m.classList.remove('show');}
+const INFO={
+  level:['⭐ 레벨과 XP','문제를 맞히면 XP(경험치)가 10점씩, 배틀을 끝내면 50점이 쌓여요.<br>XP가 다 차면 레벨이 올라가고 칭호가 멋져져요.<br>루키 → 브론즈 → 실버 → 골드 → 다이아 → 마스터 → 레전드'],
+  alpha:['🔺 알파','잘했을 때만 받는 특별한 보석이에요. 절대 안 줄어요.<br>배틀에서 틀린 단어가 1개 이하면 +1, 하나도 안 틀리면 +1 더!<br>연속 정답 15개 +1, 3일·7일·30일 연속 학습 보너스, 뱃지 10개마다 +1'],
+  streak:['🔥 연속 학습','하루도 안 빼먹고 배틀한 날 수예요.<br>3일째 알파 1개, 7일째 3개, 30일째 10개!<br>하루 빠지면 다시 0부터.'],
+  words:['📚 누적 단어','지금까지 부모님이 넣어준 모든 단어 수예요.'],
+  trophy:['🏆 트로피','단어마다 별이 최대 5개 있어요. 그 별을 전부 더한 수가 트로피!<br>뜻 맞히기 1 · 영어 찾기 2 · 철자 조립 3 · 빈칸 4 · 직접 쓰기 5'],
+  conquer:['👑 정복','별 5개를 다 채운 단어 수예요. 직접 쓰기까지 성공해야 정복!'],
+  title:['🏷️ 칭호','레벨에 따라 자동으로 붙고, 뱃지 화면에서 딴 뱃지를 누르면 그 이름으로 바꿀 수 있어요.'],
+};
 function askForm(title,fields,onOk){
   const m=$('#modal');
   m.innerHTML=`<div class="card" style="text-align:left"><div style="font-size:1.3rem;margin-bottom:10px;text-align:center">${title}</div>
@@ -392,8 +406,10 @@ function buildRound(){
   if(c.test){
     c.wids.forEach(wid=>{const w=W(wid),n=formsOf(w).length,t=bossType(w);items.push({wid,type:t,retry:0,boss:true,f:(n&&SPELLISH.includes(t)&&Math.random()<0.5)?1+Math.floor(Math.random()*n):0});});
   }else{
-    const t=c.types[c.round];
-    c.chunks[c.round].forEach(wid=>{const w=W(wid),n=formsOf(w).length;items.push({wid,type:t,retry:0,boss:false,f:0});if(n&&SPELLISH.includes(t))for(let i=1;i<=n;i++)items.push({wid,type:t,retry:0,boss:false,f:i});});
+    const rt=c.types[c.round],DOWN={write:'blank',blank:'spell',spot:'english'},UP={meaning:'spot',english:'blank',match:'spell'};
+    c.chunks[c.round].forEach(wid=>{const w=W(wid),n=formsOf(w).length;
+      const t=w.mastery<2?(DOWN[rt]||rt):w.mastery>=4?(UP[rt]||rt):rt;   // 숙련도 낮으면 쉬운 유형, 높으면 어려운 유형
+      items.push({wid,type:t,retry:0,boss:false,f:0});if(n&&SPELLISH.includes(t))for(let i=1;i<=n;i++)items.push({wid,type:t,retry:0,boss:false,f:i});});
   }
   c.queue=shuffle(items);c.idx=0;
 }
@@ -493,10 +509,11 @@ function showHome(){
   render(`
     <h1>BRAWL<br>ENGLISH<small>브롤잉글리쉬</small></h1>
     <div class="card" style="text-align:left;padding:14px 18px"><div class="row" style="justify-content:space-between;align-items:center;flex-wrap:nowrap">
-      <div><div style="font-size:1.35rem">시온 <span class="badge" style="font-size:.85rem;transform:none">${ti.e} ${esc(ti.n)}</span></div><div class="lbl">Lv ${L.level} · 다음 레벨까지 ${L.need-L.into} XP</div></div>
-      <div style="text-align:right;white-space:nowrap"><div class="big" style="font-size:1.9rem;color:var(--pink)">🔺${p.alpha}</div><div class="lbl">🔥 ${st}일 연속</div></div>
+      <div><div style="font-size:1.35rem">시온 <span class="badge stat" data-info="title" style="font-size:.85rem;transform:none;border-bottom:0">${ti.e} ${esc(ti.n)}</span></div><div class="lbl stat" data-info="level">Lv ${L.level} · 다음 레벨까지 ${L.need-L.into} XP</div></div>
+      <div style="text-align:right;white-space:nowrap"><div class="big stat" data-info="alpha" style="font-size:1.9rem;color:var(--pink);border-bottom:0">🔺${p.alpha}</div><div class="lbl stat" data-info="streak">🔥 ${st}일 연속</div></div>
     </div><div class="bar" style="margin:10px 0 0;height:12px"><i style="width:${L.into/L.need*100}%;background:linear-gradient(90deg,var(--orange),var(--yellow))"></i></div>
-    <div class="lbl" style="margin-top:8px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px"><span>📚 누적 단어 <b>${S.words.length}</b>개</span><span>🏆 트로피 ${trophies}</span><span>👑 정복 ${conquered}</span><span>${doneToday?'오늘 배틀 '+doneToday+'회 ✔':'오늘 배틀 아직'}</span></div></div>
+    <div class="lbl" style="margin-top:8px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px"><span class="stat" data-info="words">📚 누적 단어 <b>${S.words.length}</b>개</span><span class="stat" data-info="trophy">🏆 트로피 ${trophies}</span><span class="stat" data-info="conquer">👑 정복 ${conquered}</span><span>${doneToday?'오늘 배틀 '+doneToday+'회 ✔':'오늘 배틀 아직'}</span></div>
+    <div class="lbl" style="margin-top:4px;font-size:.85rem">숫자를 누르면 설명이 나와요</div></div>
     ${resume?`<button class="btn primary" onclick="resumeSession()">이어하기 ▶ <small style="font-size:1rem">${esc(S.cur.test?'테스트':'배틀')} · ${esc(S.cur.group||'')}</small></button>`:''}
     ${S.words.length<4?`<div class="card">아직 단어가 없어요.<br>부모님 화면에서 단어를 4개 이상 넣어주세요.</div>`:`<h2>📚 단어 묶음 <span style="font-size:.9rem;color:rgba(255,255,255,.7)">레디로 익히고, 배틀로 정복!</span></h2>`}
     ${list.map(g=>{const ws=gWords(g),plan=pickFrom(ws),nNew=plan.filter(id=>!W(id).due).length,m5=ws.filter(w=>w.mastery>=5).length,ok=ws.length>=4;
@@ -505,22 +522,29 @@ function showHome(){
         <div class="stars">${'★'.repeat(Math.round(ws.reduce((a,w)=>a+w.mastery,0)/Math.max(1,ws.length)))}</div></div>
         <div class="row"><button class="btn blue" data-ready="${esc(g)}" ${ws.length?'':'disabled'}>📖 레디</button><button class="btn primary" style="font-size:1.4rem" data-battle="${esc(g)}" ${ok?'':'disabled'}>⚔️ 배틀</button></div>
         ${ok?`<button class="btn link" style="margin:0;padding:6px" data-t="${esc(g)}">🧪 전체 복습 테스트 (${ws.length}단어)</button>`:''}</div>`;}).join('')}
-    <h2>🏅 뱃지 시즌 ${p.season} <span style="font-size:.9rem;color:rgba(255,255,255,.7)">${Object.keys(p.badges).length}/${BADGES.length} · 10개마다 🔺1, 100개 다 모으면 🔺5</span></h2>
-    <div class="bshelf">${(badgeAll?BADGES:FAMS.flatMap(f=>{const tiers=BADGES.filter(b=>b.fam===f.k),got=tiers.filter(b=>p.badges[b.id]);return [got[got.length-1],tiers.find(b=>!p.badges[b.id])].filter(Boolean);})).map(b=>`<div class="bdg ${p.badges[b.id]?(p.title===b.id?'on':''):'lock'}" data-b="${b.id}"><div class="be">${b.e}</div><div class="bn">${b.n}</div></div>`).join('')}</div>
-    <button class="btn ghost" id="allb" style="margin-top:10px">${badgeAll?'간단히 보기':'뱃지 100개 전부 보기'}</button>
-    <div class="sub" style="font-size:.9rem">딴 뱃지를 누르면 칭호로 · 회색은 누르면 조건이 나와요</div>
+    <button class="btn" onclick="showBadges()" style="display:flex;justify-content:space-between;align-items:center"><span>🏅 뱃지 시즌 ${p.season}</span><span>${Object.keys(p.badges).length}/${BADGES.length} ▶</span></button>
     <div class="card" style="text-align:left;padding:12px 18px;margin-top:20px"><div class="lbl">🎵 음악 볼륨</div><input type="range" min="0" max="1" step="0.05" value="${Music.vol}" id="vol"></div>
     <button class="btn link" onclick="showGate()">부모님 화면${famRef?' · ☁️ '+esc(famCode()):''}</button>`);
   app.querySelectorAll('[data-battle]').forEach(b=>b.onclick=()=>startSession(b.dataset.battle));
   app.querySelectorAll('[data-ready]').forEach(b=>b.onclick=()=>showReady(b.dataset.ready));
   app.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>startTest(b.dataset.t));
-  app.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>{const bd=BADGES.find(x=>x.id===b.dataset.b);
-    if(p.badges[bd.id]){p.title=p.title===bd.id?'':bd.id;save();showHome();toast(p.title?'칭호: '+bd.n:'칭호를 뗐어요');}
-    else toast(bd.e+' '+bd.n+' — '+bd.d);});
+  app.querySelectorAll('[data-info]').forEach(el=>el.onclick=()=>{const i=INFO[el.dataset.info];info(i[0],i[1]);});
   $('#vol').oninput=e=>Music.setVol(+e.target.value);
-  $('#allb').onclick=()=>{badgeAll=!badgeAll;showHome();};
 }
-let badgeAll=false;
+// ── 뱃지 화면
+function showBadges(){
+  view='badges';
+  const p=S.prof,n=Object.keys(p.badges).length;
+  render(`<div class="top"><button class="ico" onclick="showHome()">🏠 홈</button><span class="badge">🏅 뱃지 시즌 ${p.season}</span><span>${n}/${BADGES.length}</span></div>
+    <div class="card" style="padding:12px 18px"><div class="bar" style="margin:0 0 6px"><i style="width:${n/BADGES.length*100}%;background:linear-gradient(90deg,var(--orange),var(--yellow))"></i></div>
+    <div class="lbl">10개 모을 때마다 🔺1 · 100개 다 모으면 🔺5 + 새 시즌!<br>딴 뱃지를 누르면 칭호가 돼요 · 회색은 누르면 조건이 나와요</div></div>
+    ${FAMS.map(f=>{const tiers=BADGES.filter(b=>b.fam===f.k),got=tiers.filter(b=>p.badges[b.id]).length;return `<div class="famh">${f.e} ${f.n} <span style="font-size:.9rem;color:rgba(255,255,255,.7)">${got}/10</span></div>
+      <div class="bshelf" style="grid-template-columns:repeat(5,1fr)">${tiers.map((b,i)=>`<div class="bdg ${p.badges[b.id]?(p.title===b.id?'on':''):'lock'}" data-b="${b.id}"><div class="be">${b.e}</div><div class="bn">${ROMAN[i]}</div></div>`).join('')}</div>`;}).join('')}
+    <button class="btn primary" onclick="showHome()" style="margin-top:24px">🏠 홈으로</button>`);
+  app.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>{const bd=BADGES.find(x=>x.id===b.dataset.b);
+    if(p.badges[bd.id]){p.title=p.title===bd.id?'':bd.id;save();showBadges();toast(p.title?'칭호: '+bd.n:'칭호를 뗐어요');}
+    else toast('🔒 '+bd.n+' — '+bd.d);});
+}
 // ── 레디: 카드 뒤집기 무한 캐러셀
 let R=null;
 function showReady(g){
@@ -616,27 +640,34 @@ function optionsFor(w,key){
   return shuffle([w,...others]);
 }
 function bindOpts(attr,rightVal,sayOnOk,rightEn){
-  let done=false;
+  let done=false,sel=null;
+  const sb=$('#submit');
   app.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
-    if(done)return;done=true;
-    const ok=b.dataset[attr]===rightVal;
-    app.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x.dataset[attr]===rightVal)x.classList.add('ok');});
-    if(!ok)b.classList.add('bad');
+    if(done)return;
+    app.querySelectorAll('.opt').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');sel=b;sb.disabled=false;
+  });
+  sb.onclick=()=>{
+    if(done||!sel)return;done=true;
+    const ok=sel.dataset[attr]===rightVal;
+    app.querySelectorAll('.opt').forEach(x=>{x.disabled=true;x.classList.remove('sel');if(x.dataset[attr]===rightVal)x.classList.add('ok');});
+    if(!ok)sel.classList.add('bad');
+    sb.disabled=true;
     if(sayOnOk)speak(sayOnOk);
     const fb=$('#fb');if(fb)fb.innerHTML=fbHtml(ok,rightEn||sayOnOk||'');
     setTimeout(()=>answer(ok),ok?1000:1900);
-  });
+  };
 }
+const SUBMIT='<button class="btn primary submit" id="submit" disabled>제출 ✔</button>';
 GAMES.meaning=w=>{
   const opts=optionsFor(w,'ko');
   $('#g').innerHTML=`<div class="prompt"><div class="word">${esc(w.en)}${w.form?`<div style="font-size:1.4rem;color:#fff;-webkit-text-stroke:0;text-shadow:0 3px 0 var(--ink)">- ${esc(w.form)}</div>`:''}</div><button class="spk" data-say="${esc(w.en)}">🔊</button></div>
-    <div class="opts">${opts.map(o=>`<button class="opt" data-id="${o.id}">${esc(o.ko)}</button>`).join('')}</div><div id="fb"></div>`;
+    <div class="opts">${opts.map(o=>`<button class="opt" data-id="${o.id}">${esc(o.ko)}</button>`).join('')}</div>${SUBMIT}<div id="fb"></div>`;
   speak(w.en);bindOpts('id',w.id,null,w.ko);
 };
 GAMES.english=w=>{
   const opts=optionsFor(w,'en');
   $('#g').innerHTML=`<div class="prompt"><div class="ko">${esc(w.ko)}</div></div>
-    <div class="opts">${opts.map(o=>`<button class="opt en" data-id="${o.id}">${esc(o.en)}</button>`).join('')}</div><div id="fb"></div>`;
+    <div class="opts">${opts.map(o=>`<button class="opt en" data-id="${o.id}">${esc(o.en)}</button>`).join('')}</div>${SUBMIT}<div id="fb"></div>`;
   bindOpts('id',w.id,w.en);
 };
 function tileGame(w,it,open,bankChars){
@@ -648,12 +679,13 @@ function tileGame(w,it,open,bankChars){
     g.innerHTML=promptHtml(w,it,true)+`
       <div class="slots">${chars.map((ch,p)=>{if(ch===' ')return '<span class="gap"></span>';const o=open.includes(p);const v=o?(fill[p]?fill[p].ch:''):ch;return `<span class="slot ${o?'open':'fixed'} ${o&&p===next?'cur':''} ${o?(state||''):''}">${esc(v)}</span>`;}).join('')}</div>
       <div class="tiles">${bank.map(t=>`<button class="tile" data-i="${t.i}" ${order.some(p=>fill[p]===t)||done?'disabled':''}>${esc(t.ch)}</button>`).join('')}</div>
-      <div class="row"><button class="btn ghost" id="undo" ${done?'disabled':''}>← 지우기</button></div><div id="fb"></div>`;
+      <div class="row"><button class="btn ghost" id="undo" ${done?'disabled':''}>← 지우기</button></div>
+      <button class="btn primary submit" id="submit" ${(order.length===open.length&&!done)?'':'disabled'}>제출 ✔</button><div id="fb"></div>`;
+    g.querySelector('#submit').onclick=()=>{if(order.length===open.length&&!done)check();};
     g.querySelectorAll('.tile').forEach(b=>b.onclick=()=>{
       const t=bank[+b.dataset.i],p=open.find(p=>!fill[p]);
       if(p===undefined||done)return;
-      fill[p]=t;order.push(p);
-      if(order.length===open.length)check();else draw();
+      fill[p]=t;order.push(p);draw();
     });
     g.querySelector('#undo').onclick=()=>{const p=order.pop();if(p!==undefined){delete fill[p];draw();}};
   };
@@ -690,80 +722,32 @@ function recordMiss(w,typed){
 }
 GAMES.write=(w,it)=>{
   let tries=0,done=false;
-  const t=target(w,it),n=t.length;
-  const hint1=t.split('').map((c,i)=>i===0||i===n-1||c===' '?c:'_').join(' ');
-  const hint2=t.split('').map((c,i)=>i<Math.ceil(n*0.4)||i>=n-Math.ceil(n*0.3)||c===' '?c:'_').join(' ');
-  const draw=hint=>{
+  const t=target(w,it),n=t.length,rev=new Set([0]);
+  t.split('').forEach((c,i)=>{if(c===' ')rev.add(i);});
+  const hidden=()=>t.split('').map((c,i)=>i).filter(i=>!rev.has(i));
+  const hintStr=()=>t.split('').map((c,i)=>rev.has(i)?c:'_').join(' ');
+  const reveal=k=>{const h=hidden();for(let i=0;i<k&&h.length-i>1;i++)rev.add(h[i]);};   // 마지막 한 글자는 남겨둠
+  const draw=msg=>{
     $('#g').innerHTML=promptHtml(w,it,false)+`
-      <div class="hint">${hint||'&nbsp;'}</div>
+      <div class="hint">${hintStr()}</div>
       <input id="inp" class="inp" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="영어로 써 보세요">
-      <button class="btn primary" id="ok">확인</button><div id="fb"></div>`;
+      <div class="row" style="flex-wrap:nowrap"><button class="btn ghost" id="hintb" style="flex:1;white-space:nowrap;font-size:1rem;padding:12px 6px" ${hidden().length<=1?'disabled':''}>💡 한 글자 더</button><button class="btn primary" id="ok" style="flex:2">제출 ✔</button></div>
+      <div class="sub" style="font-size:.95rem">${msg||'첫 글자와 글자 수는 알려줄게요'}</div><div id="fb"></div>`;
     const i=$('#inp');i.focus();
     $('#ok').onclick=submit;i.onkeydown=e=>{if(e.key==='Enter')submit();};
+    $('#hintb').onclick=()=>{reveal(1);const v=i.value;draw('힌트를 썼어요');$('#inp').value=v;};
   };
   const submit=()=>{
     if(done)return;
     const v=$('#inp').value.trim().toLowerCase();if(!v)return;
     if(v===t){
       done=true;speak(t);
-      $('#fb').innerHTML=tries===0?fbHtml(true):'<div class="good">힌트로 맞혔어요! 다시 한 번 나올 거예요</div>';
+      $('#fb').innerHTML=tries===0?fbHtml(true):'<div class="good">이번엔 맞혔어요! 다시 한 번 나올 거예요</div>';
       setTimeout(()=>answer(tries===0),tries===0?1000:1500);return;
     }
-    tries++;if(!it.f)recordMiss(w,v);
-    if(tries===1)draw('힌트: '+esc(hint1));
-    else if(tries===2)draw('힌트: '+esc(hint2));
+    tries++;if(!it.f)recordMiss(w,v);Music.sfx(false);
+    if(tries<3){reveal(2);draw(tries===1?'아깝다! 글자 두 개 더 열어줄게':'거의 다 왔어! 한 번만 더');}
     else{done=true;speak(t);$('#fb').innerHTML=fbHtml(false,t);setTimeout(()=>answer(false),2200);}
-  };
-  draw();
-};
-
-// 철자 탐정: 진짜 철자 하나 + 그럴듯한 오타들
-const rnd=n=>Math.floor(Math.random()*n);
-function misspell(en){
-  const v='aeiou';
-  const ops=[
-    s=>{const i=rnd(s.length-1);return s[i]===s[i+1]?null:s.slice(0,i)+s[i+1]+s[i]+s.slice(i+2);},
-    s=>{const idx=[...s].map((c,i)=>v.includes(c)?i:-1).filter(i=>i>=0);if(!idx.length)return null;const i=idx[rnd(idx.length)];const alt=v.replace(s[i],'');return s.slice(0,i)+alt[rnd(alt.length)]+s.slice(i+1);},
-    s=>{const i=1+rnd(s.length-1);return s.slice(0,i)+s.slice(i+1);},
-    s=>{const i=1+rnd(s.length-1);return s.slice(0,i)+s[i]+s.slice(i);}
-  ];
-  return ops[rnd(ops.length)](en);
-}
-function decoys(t,n,lastMiss){
-  const set=new Set();
-  if(lastMiss&&lastMiss!==t)set.add(lastMiss);
-  let guard=0;
-  while(set.size<n&&guard++<60){const f=misspell(t);if(f&&f!==t&&f.length>1)set.add(f);}
-  const others=shuffle(S.words.filter(x=>x.en!==t)).map(x=>x.en);
-  for(const o of others){if(set.size>=n)break;set.add(o);}
-  return [...set].slice(0,n);
-}
-GAMES.spot=(w,it)=>{
-  const t=target(w,it),opts=shuffle([t,...decoys(t,3,it.f?null:w.lastMiss)]);
-  $('#g').innerHTML=(it.f?promptHtml(w,it,false):`<div class="prompt"><div class="lbl" style="color:rgba(255,255,255,.8)">🕵️ 진짜 철자는 딱 하나!</div><div class="ko">${esc(w.ko)}</div></div>`)+`
-    <div class="opts">${opts.map(o=>`<button class="opt en" data-v="${esc(o)}">${esc(o)}</button>`).join('')}</div><div id="fb"></div>`;
-  bindOpts('v',t,t);
-};
-// 짝꿍 찾기: 영어 4개를 두고 뜻이 하나씩 나오면 짝을 찾기
-GAMES.match=w=>{
-  const others=shuffle(S.words.filter(x=>x.id!==w.id&&x.en!==w.en&&x.ko!==w.ko)).slice(0,3);
-  const set=shuffle([w,...others]),order=shuffle(set),found=new Set();
-  let i=0,wrongOnW=false,done=false;
-  const draw=()=>{
-    const cur=order[i],g=$('#g');
-    g.innerHTML=`<div class="prompt"><div class="lbl" style="color:rgba(255,255,255,.8)">🤝 짝꿍 찾기 ${i+1}/${order.length}</div><div class="ko">${esc(cur.ko)}</div></div>
-      <div class="opts grid2">${set.map(o=>`<button class="opt en ${found.has(o.id)?'gone':''}" data-id="${o.id}">${esc(o.en)}</button>`).join('')}</div>`;
-    g.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
-      if(done)return;
-      if(b.dataset.id===cur.id){
-        found.add(cur.id);b.classList.add('ok');speak(cur.en);i++;
-        if(i>=order.length){done=true;$('#g').insertAdjacentHTML('beforeend',wrongOnW?`<div class="wrongmsg"><span class="cheer">${pick(CHEER)}</span></div>`:fbHtml(true));setTimeout(()=>answer(!wrongOnW),1000);}
-        else setTimeout(draw,450);
-      }else{
-        b.classList.add('bad');if(cur.id===w.id)wrongOnW=true;
-        setTimeout(()=>b.classList.remove('bad'),450);
-      }
-    });
   };
   draw();
 };
