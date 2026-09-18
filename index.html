@@ -177,7 +177,8 @@ const INTERVALS=[1,3,7,14,30];            // 복습 간격(일)
 const ROUNDS=['meaning','english','spell','blank','write','boss'];
 const TYPE_LEVEL={meaning:1,english:2,spell:3,blank:4,write:5,match:2,spot:4};
 const TYPE_NAME={meaning:'뜻 맞히기',english:'영어 찾기',spell:'철자 조립',blank:'빈칸 채우기',write:'직접 쓰기',match:'짝꿍 찾기',spot:'철자 탐정'};
-const ROUND_DESC={meaning:'영어를 보고 뜻을 골라요',english:'뜻을 보고 영어를 골라요',spell:'글자를 눌러 단어를 만들어요',blank:'비어 있는 글자를 채워요',write:'뜻을 보고 영어로 써요'};
+const ROUND_DESC={meaning:'영어를 보고 뜻을 골라요',english:'뜻을 보고 영어를 골라요',spell:'글자를 눌러 단어를 만들어요',blank:'비어 있는 글자를 채워요',write:'뜻을 보고 영어로 써요',spot:'진짜 철자 하나를 찾아요',match:'뜻에 맞는 영어 짝을 찾아요'};
+const SPELLISH=['spell','blank','write','spot'];
 const SAMPLE=`pretend / ~인 척하다
 discover / 발견하다
 hungry / 배고픈
@@ -358,33 +359,43 @@ function pickToday(){return pickFrom(pool());}
 
 // ── 세션 진행 ─────────────────────────────────────────
 function startSession(g){
-  const wids=pickFrom(gWords(g));if(!wids.length)return;
-  S.cur={date:today(),wids,round:0,queue:[],idx:0,wrong:{},bossWrong:{},exits:0,seconds:0,tick:Date.now(),group:g||'전체'};
-  buildRound();save();showPreview();
+  const ws=gWords(g),seen=ws.filter(w=>w.seen);
+  view='home';
+  render(`<div class="top"><button class="ico" onclick="showHome()">🏠 홈</button><span class="badge">⚔️ 배틀 · ${g?esc(g):'전체'}</span><span></span></div>
+    <h1 style="font-size:2.2rem">BATTLE<small>어떤 단어로 싸울까?</small></h1>
+    <button class="btn blue" ${seen.length>=4?'':'disabled'} onclick="beginBattle('${esc(g)}','seen')">레디에서 본 단어만 <small style="display:block;font-size:1rem;-webkit-text-stroke:0">${seen.length}개${seen.length<4?' · 레디에서 4개 이상 뒤집으면 열려요':''}</small></button>
+    <button class="btn primary" onclick="beginBattle('${esc(g)}','all')">전체 배틀 <small style="display:block;font-size:1rem;-webkit-text-stroke:0">${ws.length}개 · 3라운드</small></button>`);
+}
+function beginBattle(g,which){
+  const ws=gWords(g).filter(w=>which==='all'||w.seen);if(ws.length<4)return;
+  const wids=shuffle(ws).map(w=>w.id),avg=ws.reduce((a,w)=>a+w.mastery,0)/ws.length;
+  let pool=Object.keys(TYPE_LEVEL);if(avg<2)pool=pool.filter(t=>t!=='write');   // 새 단어 위주면 직접 쓰기 제외
+  const types=shuffle(pool).slice(0,3).sort((a,b)=>TYPE_LEVEL[a]-TYPE_LEVEL[b]);
+  const chunks=[[],[],[]];wids.forEach((id,i)=>chunks[i%3].push(id));
+  S.cur={date:today(),wids,round:0,types,chunks,queue:[],idx:0,wrong:{},bossWrong:{},exits:0,seconds:0,tick:Date.now(),group:g||'전체'};
+  buildRound();save();showRoundIntro();
 }
 function startTest(g){
   const ws=g?S.words.filter(w=>w.group===g):S.words;
   if(ws.length<4)return;
-  S.cur={date:today(),wids:shuffle(ws).map(w=>w.id),round:ROUNDS.length-1,queue:[],idx:0,wrong:{},bossWrong:{},exits:0,seconds:0,tick:Date.now(),test:g||'전체',group:g||'전체'};
+  S.cur={date:today(),wids:shuffle(ws).map(w=>w.id),round:0,queue:[],idx:0,wrong:{},bossWrong:{},exits:0,seconds:0,tick:Date.now(),test:g||'전체',group:g||'전체'};
   buildRound();save();showRoundIntro();
 }
-function resumeSession(){S.cur.tick=Date.now();save();if(S.cur.idx===0)showRoundIntro();else showItem();}
+function resumeSession(){if(!S.cur.test&&!S.cur.types){S.cur=null;save();showHome();return;}S.cur.tick=Date.now();save();if(S.cur.idx===0)showRoundIntro();else showItem();}
 function bossType(w){
   const m=w.mastery;
   const pool=m>=4?['write','blank','spell','spot']:m>=2?['blank','spell','english','spot','match']:['meaning','english','spell','match'];
   return pool[Math.floor(Math.random()*pool.length)];
 }
 function buildRound(){
-  const c=S.cur,type=ROUNDS[c.round],boss=type==='boss';
-  const items=[];
-  c.wids.forEach(wid=>{
-    const w=W(wid),n=formsOf(w).length,t=boss?bossType(w):type;
-    const spellish=['spell','blank','write','spot'].includes(t);
-    if(boss){items.push({wid,type:t,retry:0,boss,f:(n&&spellish&&Math.random()<0.5)?1+Math.floor(Math.random()*n):0});}
-    else{items.push({wid,type:t,retry:0,boss,f:0});if(n&&spellish)for(let i=1;i<=n;i++)items.push({wid,type:t,retry:0,boss,f:i});}
-  });
-  c.queue=shuffle(items);
-  c.idx=0;
+  const c=S.cur,items=[];
+  if(c.test){
+    c.wids.forEach(wid=>{const w=W(wid),n=formsOf(w).length,t=bossType(w);items.push({wid,type:t,retry:0,boss:true,f:(n&&SPELLISH.includes(t)&&Math.random()<0.5)?1+Math.floor(Math.random()*n):0});});
+  }else{
+    const t=c.types[c.round];
+    c.chunks[c.round].forEach(wid=>{const w=W(wid),n=formsOf(w).length;items.push({wid,type:t,retry:0,boss:false,f:0});if(n&&SPELLISH.includes(t))for(let i=1;i<=n;i++)items.push({wid,type:t,retry:0,boss:false,f:i});});
+  }
+  c.queue=shuffle(items);c.idx=0;
 }
 function tickTime(){const c=S.cur,now=Date.now();c.seconds+=Math.min(120,(now-c.tick)/1000);c.tick=now;}
 function answer(ok){
@@ -399,22 +410,26 @@ function answer(ok){
     c.combo=0;w.wrongs=(w.wrongs||0)+1;
     c.wrong[it.wid]=(c.wrong[it.wid]||0)+1;
     if(it.boss)c.bossWrong[it.wid]=(c.bossWrong[it.wid]||0)+1;
-    // ponytail: 틀린 단어는 2~3문제 뒤에 다시, 최대 2번까지
-    if(it.retry<2)c.queue.splice(Math.min(c.idx+3,c.queue.length),0,{...it,retry:it.retry+1});
+    // 틀린 단어는 2~3문제 뒤에 다른 유형으로 한 번만 다시
+    if(it.retry<1){
+      let alts=(c.test?['meaning','english','spell','blank','spot']:c.types).filter(x=>x!==it.type);
+      if(it.f)alts=alts.filter(x=>SPELLISH.includes(x));
+      const alt=alts.length?alts[Math.floor(Math.random()*alts.length)]:it.type;
+      c.queue.splice(Math.min(c.idx+3,c.queue.length),0,{...it,type:alt,retry:1});
+    }
   }
   c.idx++;
   if(c.idx>=c.queue.length){
-    c.round++;
-    if(c.round>=ROUNDS.length){finish();return;}
-    buildRound();save();showRoundIntro();return;
+    if(c.test||c.round>=2){finish();return;}
+    c.round++;buildRound();save();showRoundIntro();return;
   }
   save();showItem();
 }
 function finish(){
   const c=S.cur,t=today(),conquered=[],retry=[];
   c.wids.forEach(id=>{
-    const w=W(id),wrong=c.wrong[id]||0,bw=c.bossWrong[id]||0;
-    if(bw===0){conquered.push(id);w.due=addDays(t,INTERVALS[Math.min(w.box||0,4)]);w.box=(w.box||0)+1;}
+    const w=W(id),wrong=c.wrong[id]||0;
+    if(wrong===0){conquered.push(id);w.due=addDays(t,INTERVALS[Math.min(w.box||0,4)]);w.box=(w.box||0)+1;}
     else{retry.push(id);w.box=0;w.due=addDays(t,1);}
     if(wrong>0)w.mastery=Math.max(0,w.mastery-1);
   });
@@ -486,7 +501,7 @@ function showHome(){
     ${S.words.length<4?`<div class="card">아직 단어가 없어요.<br>부모님 화면에서 단어를 4개 이상 넣어주세요.</div>`:`<h2>📚 단어 묶음 <span style="font-size:.9rem;color:rgba(255,255,255,.7)">레디로 익히고, 배틀로 정복!</span></h2>`}
     ${list.map(g=>{const ws=gWords(g),plan=pickFrom(ws),nNew=plan.filter(id=>!W(id).due).length,m5=ws.filter(w=>w.mastery>=5).length,ok=ws.length>=4;
       return `<div class="gcard"><div class="row" style="justify-content:space-between;align-items:center;flex-wrap:nowrap">
-        <div><div style="font-size:1.4rem">${g?esc(g):'🌍 전체'}</div><div class="lbl">${ws.length}단어 · 별5 ${m5}개${ok?` · 배틀 ${plan.length}개(새 ${nNew})`:' · 4개 이상 필요'}</div></div>
+        <div><div style="font-size:1.4rem">${g?esc(g):'🌍 전체'}</div><div class="lbl">${ws.length}단어 · 레디로 본 것 ${ws.filter(w=>w.seen).length}개 · 별5 ${m5}개${ok?'':' · 4개 이상 필요'}</div></div>
         <div class="stars">${'★'.repeat(Math.round(ws.reduce((a,w)=>a+w.mastery,0)/Math.max(1,ws.length)))}</div></div>
         <div class="row"><button class="btn blue" data-ready="${esc(g)}" ${ws.length?'':'disabled'}>📖 레디</button><button class="btn primary" style="font-size:1.4rem" data-battle="${esc(g)}" ${ok?'':'disabled'}>⚔️ 배틀</button></div>
         ${ok?`<button class="btn link" style="margin:0;padding:6px" data-t="${esc(g)}">🧪 전체 복습 테스트 (${ws.length}단어)</button>`:''}</div>`;}).join('')}
@@ -526,7 +541,7 @@ function drawReady(){
     <div class="sub">카드를 누르면 뒤집혀요 · 끝나면 처음부터 다시</div>`);
   if(R.mode==='en'&&!R.flip)speak(w.en);
   const fc=$('#fc');
-  fc.onclick=()=>{R.flip=!R.flip;fc.classList.toggle('on',R.flip);Music.sfx(true);if(R.mode==='ko'&&R.flip)speak(w.en);};
+  fc.onclick=()=>{R.flip=!R.flip;fc.classList.toggle('on',R.flip);Music.sfx(true);if(R.flip){w.seen=today();save();}if(R.mode==='ko'&&R.flip)speak(w.en);};
   const go=d=>{R.i=(R.i+d+n)%n;R.flip=false;drawReady();};
   $('#next').onclick=()=>go(1);$('#prev').onclick=()=>go(-1);
   let x0=null;fc.ontouchstart=e=>{x0=e.touches[0].clientX;};fc.ontouchend=e=>{if(x0===null)return;const dx=e.changedTouches[0].clientX-x0;x0=null;if(Math.abs(dx)>50)go(dx<0?1:-1);};
@@ -542,18 +557,23 @@ function showPreview(){
 }
 function showRoundIntro(){
   view='game';
-  const c=S.cur,type=ROUNDS[c.round],boss=type==='boss';
+  const c=S.cur;
+  if(c.test){render(`
+    <h1>TEST<small>🧪 ${esc(c.test)} · ${c.wids.length}단어 전체 복습</small></h1>
+    <div class="card tilt"><div style="font-size:1.3rem">여러 가지 방식으로 섞어서 나와요</div></div>
+    <button class="btn primary" onclick="showItem()">GO!</button>
+    <button class="btn link" onclick="quitToHome()">🏠 홈으로 (나중에 이어하기)</button>`);return;}
+  const type=c.types[c.round],boss=c.round===2,n=c.chunks[c.round].length;
   render(`
-    <h1>${c.test?'TEST':boss?'BOSS<br>BATTLE':'ROUND '+(c.round+1)}<small>${c.test?'🧪 '+esc(c.test)+' · '+c.wids.length+'단어 전체 복습':boss?'👑 오늘 배운 단어 총정리':TYPE_NAME[type]}</small></h1>
-    <div class="card tilt"><div style="font-size:1.3rem">${boss?'여러 가지 방식으로 섞어서 나와요':ROUND_DESC[type]}</div></div>
+    <h1>${boss?'BOSS<br>ROUND':'ROUND '+(c.round+1)}<small>${boss?'👑 ':''}${TYPE_NAME[type]} · ${n}단어</small></h1>
+    <div class="card tilt"><div style="font-size:1.3rem">${ROUND_DESC[type]}</div><div class="sub">${c.round+1}/3 라운드 · ${esc(c.group||'')}</div></div>
     <button class="btn primary" onclick="showItem()">GO!</button>
     <button class="btn link" onclick="quitToHome()">🏠 홈으로 (나중에 이어하기)</button>`);
 }
-function quitToHome(){ask('잠깐 쉬고 홈으로 갈까요?<br><span class="muted" style="font-size:1rem">진행 상황은 남아 있어요. 홈에서 이어하기를 누르면 돼요.</span>',()=>{if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});showHome();});}
 function showItem(){
   view='game';
   const c=S.cur,it=c.queue[c.idx],w=W(it.wid),total=c.queue.length;
-  render(`<div class="top"><span class="badge">${c.test?'🧪 TEST':it.boss?'👑 BOSS':'ROUND '+(c.round+1)}</span><span>${TYPE_NAME[it.type]}${it.f?' ✨':''}</span><span>${c.idx+1}/${total} <button class="ico" onclick="goFull()" title="전체화면">⛶</button> <button class="ico" onclick="Music.setVol(Music.vol>0?0:0.35);showItem()" title="음악">${Music.vol>0?'🎵':'🔇'}</button> <button class="ico" onclick="quitToHome()" title="홈으로">🏠</button></span></div>
+  render(`<div class="top"><span class="badge">${c.test?'🧪 TEST':c.round===2?'👑 BOSS':'ROUND '+(c.round+1)}</span><span>${TYPE_NAME[it.type]}${it.f?' ✨':''}</span><span>${c.idx+1}/${total} <button class="ico" onclick="goFull()" title="전체화면">⛶</button> <button class="ico" onclick="Music.setVol(Music.vol>0?0:0.35);showItem()" title="음악">${Music.vol>0?'🎵':'🔇'}</button> <button class="ico" onclick="quitToHome()" title="홈으로">🏠</button></span></div>
     <div class="bar"><i style="width:${c.idx/total*100}%"></i></div><div id="g"></div>${(c.combo||0)>=3?`<div class="combo">🔥 x${c.combo}</div>`:''}`);
   GAMES[it.type](w,it);
 }
