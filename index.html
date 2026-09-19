@@ -360,8 +360,8 @@ const INFO={
   alpha:['🔺 알파','잘했을 때만 받는 특별한 보석이에요. 절대 안 줄어요.<br>배틀에서 틀린 단어가 1개 이하면 +1, 하나도 안 틀리면 +1 더!<br>연속 정답 15개 +1, 3일·7일·30일 연속 학습 보너스, 뱃지 10개마다 +1'],
   streak:['🔥 연속 학습','하루도 안 빼먹고 배틀한 날 수예요.<br>3일째 알파 1개, 7일째 3개, 30일째 10개!<br>하루 빠지면 다시 0부터.'],
   words:['📚 누적 단어','지금까지 부모님이 넣어준 모든 단어 수예요.'],
-  trophy:['🏆 트로피','단어마다 별이 최대 5개 있어요. 그 별을 전부 더한 수가 트로피!<br>뜻 맞히기 1 · 영어 찾기 2 · 철자 조립 3 · 빈칸 4 · 직접 쓰기 5'],
-  conquer:['👑 정복','별 5개를 다 채운 단어 수예요. 직접 쓰기까지 성공해야 정복!'],
+  trophy:['🏆 트로피','단어마다 별이 최대 5개 있어요. 그 별을 전부 더한 수가 트로피!<br>배틀에서 한 번 맞힐 때마다 별 1개, 틀리면 1개 빠져요. 게임은 별과 상관없어요.'],
+  conquer:['👑 정복','별 5개를 다 채운 단어 수예요. 다섯 번의 배틀에서 맞혀야 정복!'],
   title:['🏷️ 칭호','레벨에 따라 자동으로 붙고, 뱃지 화면에서 딴 뱃지를 누르면 그 이름으로 바꿀 수 있어요.'],
 };
 function askForm(title,fields,onOk){
@@ -466,7 +466,7 @@ function answer(ok){
   const it=c.queue[c.idx],w=W(it.wid);
   tickTime();
   if(ok){
-    if(it.retry===0&&!it.boss)w.mastery=Math.max(w.mastery,TYPE_LEVEL[it.type]);
+    if(it.retry===0&&!it.boss)w.mastery=Math.min(5,w.mastery+1);   // 정답 한 번 = 별 +1 (유형 무관). 별 5개는 다섯 번 맞혀야
     c.correct=(c.correct||0)+1;c.combo=(c.combo||0)+1;c.maxCombo=Math.max(c.maxCombo||0,c.combo);S.prof.correctTotal++;
     if(Math.random()<0.0001)jackpot();   // 0.01% 잭팟
   }else{
@@ -872,8 +872,8 @@ const SHOP=[
  {id:'skin_space',t:'skin',n:'우주 시온',e:'👨‍🚀',p:12,d:'은빛 우주복'},{id:'skin_dragon',t:'skin',n:'드래곤 슈트',e:'🐉',p:20,d:'붉은 드래곤 갑옷'},
  {id:'wpn_shot',t:'wpn',n:'연필 샷건',e:'🔫',p:8,d:'3발 부채꼴 · 가까이서 강해요'},{id:'wpn_beaker',t:'wpn',n:'비커 러너',e:'🧪',p:6,d:'딱총의 2배 위력 · 장전 빨라요'},
  {id:'wpn_bolt',t:'wpn',n:'번개 관통',e:'⚡',p:10,d:'적을 뚫고 지나가요 · 사거리 최고'},{id:'wpn_rocket',t:'wpn',n:'로켓 연필',e:'🚀',p:14,d:'느리지만 터지면 주변까지 피해'},
- {id:'sup_bomb',t:'sup',n:'폭탄 대포',e:'💥',p:8,d:'보이는 적 전부에게 포탄 120'},{id:'sup_laser',t:'sup',n:'번개 대포',e:'⚡',p:12,d:'포탄 95 + 맞은 적 느려짐'},
- {id:'sup_heal',t:'sup',n:'회복 대포',e:'💚',p:10,d:'포탄 60 + 내 체력 70 회복'},{id:'sup_storm',t:'sup',n:'연속 대포',e:'🌪️',p:15,d:'포탄 70 뒤에 한 번 더 45'},
+ {id:'sup_bomb',t:'sup',n:'폭탄 대포',e:'💥',p:8,d:'한 판에 폭탄 2개'},{id:'sup_laser',t:'sup',n:'번개 폭탄',e:'⚡',p:12,d:'한 판에 2개 + 맞은 적 느려짐'},
+ {id:'sup_heal',t:'sup',n:'회복 폭탄',e:'💚',p:10,d:'한 판에 2개 + 쏠 때 체력 70 회복'},{id:'sup_storm',t:'sup',n:'양방향 폭탄',e:'🌪️',p:15,d:'한 판에 3개 · 앞뒤로 동시에'},
  {id:'up_multi',t:'up',n:'총알 +1',e:'🔫',p:9,d:'한 번에 한 발 더 (부채꼴)'},{id:'up_multi2',t:'up',n:'총알 +2',e:'🔫',p:16,d:'총알 +1을 산 뒤 · 또 한 발 더'},
  {id:'up_back',t:'up',n:'앞뒤 발사',e:'↔️',p:7,d:'뒤로도 한 발 같이 나가요'},{id:'up_big',t:'up',n:'큰 총알',e:'🟠',p:10,d:'총알이 커지고 공격력 1.5배'},
  {id:'boots',t:'buff',n:'스피드 신발',e:'👟',p:5,d:'이동 속도 +12%'},{id:'heart4',t:'buff',n:'튼튼한 몸',e:'💗',p:8,d:'체력 100 → 130'},{id:'crit7',t:'buff',n:'크리티컬 연장',e:'💥',p:9,d:'크리티컬 6초 → 8초'},
@@ -886,7 +886,7 @@ function drawPix(ctx,x,y,sc,skin){const pal={...PAL.base,...(PAL[skin]||{})};PIX
 function showShop(){
   view='shop';
   const p=S.prof;p.items=p.items||{};
-  const kinds={skin:'👕 스킨',wpn:'🔫 총 (기본은 약한 딱총 · 사면 더 세고 멀리)',up:'⬆️ 무기 업그레이드 (모든 총·연필에 적용)',sup:'💣 폭탄 (누르면 조준 → 다시 누르면 발사)',buff:'💪 능력'};
+  const kinds={skin:'👕 스킨',wpn:'🔫 총 (기본은 약한 딱총 · 사면 더 세고 멀리)',up:'⬆️ 무기 업그레이드 (모든 총에 적용)',sup:'💣 폭탄 (영구 · 판마다 개수 충전 · 누르면 조준, 다시 누르면 발사)',buff:'💪 능력'};
   render(`<div class="top"><button class="ico" onclick="showHome()">🏠 홈</button><span class="badge">🛒 알파 상점</span><span>🔺${p.alpha}</span></div>
     <div class="card" style="padding:12px 18px;display:flex;gap:14px;align-items:center;text-align:left"><div id="av"></div><div><div style="font-size:1.2rem">시온 헌터</div><div class="lbl">알파로 아이템을 사요. 한 번 사면 영원히 내 것!</div></div></div>
     ${Object.keys(kinds).map(k=>`<h2>${kinds[k]}</h2>${SHOP.filter(i=>i.t===k).map(i=>{const own=has(i.id),eq=(i.t==='skin'&&p.skin===i.id)||(i.t==='wpn'&&p.wpn===i.id)||(i.t==='sup'&&p.sup===i.id);
@@ -900,13 +900,13 @@ function showShop(){
 }
 
 // ── 브롤헌터스 3D: Three.js 아레나, 양손 조이스틱, AI 봇, 총·대포 ─────────
-const WEAPONS={basic:{n:'기본 딱총',e:'🔫',dmg:18,spd:20,range:7,ammo:3,reload:1.3,count:1,spread:0,col:0x7ed957,r:.18},   // 기본은 약한 딱총. 좋은 총은 알파로
+const WEAPONS={basic:{n:'기본 딱총',e:'🔫',dmg:18,spd:20,range:7,ammo:3,reload:1.3,count:1,spread:0,col:0xffd23f,r:.22},   // 기본은 약한 딱총. 좋은 총은 알파로
  wpn_shot:{n:'연필 샷건',e:'🔫',dmg:15,spd:20,range:6.5,ammo:3,reload:1.5,count:3,spread:.25,col:0xffb347,r:.16},
  wpn_beaker:{n:'비커 러너',e:'🧪',dmg:34,spd:26,range:10,ammo:3,reload:1.1,count:1,spread:0,col:0x2ecc71,r:.22},
  wpn_bolt:{n:'번개 관통',e:'⚡',dmg:28,spd:32,range:12.5,ammo:2,reload:1.7,count:1,spread:0,pierce:true,col:0xffd23f,r:.2},
  wpn_rocket:{n:'로켓 연필',e:'🚀',dmg:45,spd:16,range:11,ammo:2,reload:2.2,count:1,spread:0,aoe:1.6,col:0xff4d4d,r:.26}};
-const SUPERS={basic:{n:'작은 대포',e:'💣',kind:'bomb',r:3,dmg:70},sup_bomb:{n:'폭탄 대포',e:'💥',kind:'bomb',r:4.5,dmg:120},
- sup_laser:{n:'번개 대포',e:'⚡',kind:'laser',dmg:95},sup_heal:{n:'회복 대포',e:'💚',kind:'heal',heal:70,r:5},sup_storm:{n:'연속 대포',e:'🌪️',kind:'storm',dmg:70,count:2}};
+const SUPERS={basic:{n:'작은 폭탄',e:'💣',kind:'bomb',shots:1},sup_bomb:{n:'폭탄 대포',e:'💥',kind:'bomb',shots:2},
+ sup_laser:{n:'번개 폭탄',e:'⚡',kind:'laser',shots:2},sup_heal:{n:'회복 폭탄',e:'💚',kind:'heal',heal:70,shots:2},sup_storm:{n:'양방향 폭탄',e:'🌪️',kind:'storm',shots:3}};   // shots = 한 판에 쓸 수 있는 개수 (영구 아이템, 판마다 다시 채워짐)
 const DIFF={easy:{n:'쉬움',e:'🙂',bots:4,hp:110,dmg:14,acc:.62,rate:1.4,sp:4.6,alpha:0,d:'봇 4명 · 그래도 만만치 않아요'},
  normal:{n:'보통',e:'😎',bots:5,hp:150,dmg:19,acc:.78,rate:1.05,sp:5.4,alpha:0,d:'봇 5명 · 제대로 쏴요'},
  hard:{n:'어려움',e:'🔥',bots:7,hp:200,dmg:26,acc:.92,rate:.75,sp:6.2,alpha:1,d:'봇 7명 · 3분 생존하면 🔺1 (하루 1번)'}};
@@ -939,8 +939,8 @@ function mkChar(c,player,name){
   g.userData.arms=[];g.userData.legs=[];
   [-.52,.52].forEach(x=>{const piv=new THREE.Group();piv.position.set(x,1.05,0);const a=sh(new THREE.Mesh(new THREE.CylinderGeometry(.11,.11,.6,8),M(c.coat)));a.position.y=-.3;piv.add(a);g.add(piv);g.userData.arms.push(piv);});
   [-.18,.18].forEach(x=>{const piv=new THREE.Group();piv.position.set(x,.38,0);const l=sh(new THREE.Mesh(new THREE.CylinderGeometry(.14,.14,.35,8),M(0x2c3e50)));l.position.y=-.2;piv.add(l);const sh2=new THREE.Mesh(new THREE.BoxGeometry(.3,.12,.4),M(0x1a1a1a));sh2.position.set(0,-.34,.05);piv.add(sh2);g.add(piv);g.userData.legs.push(piv);});
-  const gun=sh(new THREE.Mesh(new THREE.BoxGeometry(.18,.18,1),M(player?0x7ed957:0x8e44ad)));gun.position.set(.52,.85,.5);g.add(gun);
-  const tip=new THREE.Mesh(new THREE.ConeGeometry(.1,.25,8),M(0xf6d3b3));tip.rotation.x=Math.PI/2;tip.position.set(.52,.85,1.1);g.add(tip);
+  const gun=sh(new THREE.Mesh(new THREE.BoxGeometry(.18,.18,1),M(player?0x5b6b8a:0x8e44ad)));gun.position.set(.52,.85,.5);g.add(gun);
+  const tip=new THREE.Mesh(new THREE.ConeGeometry(.1,.25,8),M(player?0xff8a1f:0xf6d3b3));tip.rotation.x=Math.PI/2;tip.position.set(.52,.85,1.1);g.add(tip);
   const ring=new THREE.Mesh(new THREE.RingGeometry(player?.75:.62,player?1.05:.8,32),new THREE.MeshBasicMaterial({color:player?0xffd23f:0xff4d4d,transparent:true,opacity:.9,side:THREE.DoubleSide}));ring.rotation.x=-Math.PI/2;ring.position.y=.03;g.add(ring);g.userData.ring=ring;
   if(player){const glow=new THREE.Mesh(new THREE.CircleGeometry(1.4,32),new THREE.MeshBasicMaterial({color:0xffd23f,transparent:true,opacity:.22}));glow.rotation.x=-Math.PI/2;glow.position.y=.02;g.add(glow);
     const mk=new THREE.Mesh(new THREE.ConeGeometry(.38,.7,4),new THREE.MeshBasicMaterial({color:0xffd23f}));mk.rotation.x=Math.PI;mk.position.y=3.5;g.add(mk);g.userData.marker=mk;}
@@ -1052,7 +1052,7 @@ function startHunt(g,dk){
   const W=curWeapon(),SP=curSuper(),skin=SKIN3[S.prof.skin]||SKIN3.base;
   const pl={m:mkChar(skin,true,userName()),x:0,z:AR-9,hp:has('heart4')?130:100,maxhp:has('heart4')?130:100,lives:3,ammo:W.ammo,rel:0,lastHit:-9,dead:0,inv:0,face:0};pl.m.position.set(pl.x,0,pl.z);sc.add(pl.m);
   const aimLine=new THREE.Mesh(new THREE.BoxGeometry(.12,.02,W.range),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.35}));aimLine.visible=false;sc.add(aimLine);
-  G={g,D,dk,limit:isFree?60:180,isFree,aiming:false,ws:shuffle(ws).sort((a,b)=>a.mastery-b.mastery),qi:0,R,sc,cam,pl,W,SP,bots:[],pr:[],fx:[],gems:[],gemT:3,gemGeo,gemM,myGems:0,t:0,last:0,score:0,kills:0,deaths:0,sup:0,critUntil:0,nextQuiz:28,quizN:0,quizOk:0,wrong:[],paused:false,over:false,keys:{},mv:null,am:null,aimLine,msgT:0,timer:null,mouse:null};
+  G={g,D,dk,limit:isFree?60:180,isFree,aiming:false,bombs:SP.shots||1,ws:shuffle(ws).sort((a,b)=>a.mastery-b.mastery),qi:0,R,sc,cam,pl,W,SP,bots:[],pr:[],fx:[],gems:[],gemT:3,gemGeo,gemM,myGems:0,t:0,last:0,score:0,kills:0,deaths:0,sup:0,critUntil:0,nextQuiz:28,quizN:0,quizOk:0,wrong:[],paused:false,over:false,keys:{},mv:null,am:null,aimLine,msgT:0,timer:null,mouse:null};
   const cols=[0xe74c3c,0x9b59b6,0x3498db,0xf39c12,0x1abc9c,0xe84393,0x2d3436,0x6c5ce7];
   for(let i=0;i<D.bots;i++)spawnBot(i,cols[i%cols.length],true);
   const cv=R.domElement;
@@ -1102,9 +1102,9 @@ function fireAuto(){const p=G.pl;if(p.dead)return;fireDir(p.face);}   // 자동 
 function upgradedWeapon(W){const w={...W};if(has('up_multi'))w.count+=1;if(has('up_multi2'))w.count+=1;if(w.count>1&&!w.spread)w.spread=.18;if(has('up_big')){w.dmg*=1.5;w.r*=1.4;}return w;}
 function fireDir(ang){const p=G.pl;if(p.dead||G.paused)return;if(p.ammo<1){huntMsg('🔫 장전 중…',500);return;}p.ammo--;p.face=ang;p.m.rotation.y=ang;const W2=upgradedWeapon(G.W),mul=G.t<G.critUntil?2:1;shoot(p,ang,W2,'p',mul);if(has('up_back'))shoot(p,ang+Math.PI,W2,'p',mul);puff(p.x+Math.sin(ang)*1.1,p.z+Math.cos(ang)*1.1,G.W.col,3);Music.fx(G.W.range<3?'swing':'shoot');}
 function useSuper(){const g=G;if(!g)return;const p=g.pl;if(p.dead||g.paused)return;
-  if(g.sup<100){huntMsg('💣 폭탄 게이지가 아직… 적을 맞혀서 채워요',700);return;}
+  if(g.bombs<=0){huntMsg('💣 이번 판 폭탄을 다 썼어요 (퀴즈 정답 = 폭탄 +1)',900);return;}
   if(!g.aiming){g.aiming=true;huntMsg('🎯 방향을 정하고 폭탄 버튼을 다시 누르면 발사!',2500);Music.fx('quiz');return;}
-  g.aiming=false;g.sup=0;fireBomb(p.face);if(g.SP.kind==='storm')setTimeout(()=>{if(G&&!G.over)fireBomb(G.pl.face+Math.PI);},350);
+  g.aiming=false;g.bombs--;fireBomb(p.face);if(g.SP.kind==='storm')setTimeout(()=>{if(G&&!G.over)fireBomb(G.pl.face+Math.PI);},350);
 }
 // 폭탄: 경로를 따라 불덩이가 굴러가며 연쇄 폭발. 경로 좌우 1.6 안이면 즉사, 3.2 안이면 최대체력 80% 피해
 function fireBomb(ang){const g=G,p=g.pl,SP=g.SP,dx=Math.sin(ang),dz=Math.cos(ang),len=16;
@@ -1197,7 +1197,7 @@ function huntTick(dt){
   $('#hcrit').textContent=g.t<g.critUntil?'💥 CRITICAL x2':'';
   $('#hammo').innerHTML=Array.from({length:W.ammo},(_,i)=>`<span style="width:60px;height:12px;border:2px solid #141433;border-radius:4px;background:${i<p.ammo?'#ff8a1f':(i===p.ammo?`linear-gradient(90deg,#ff8a1f ${p.rel/W.reload*100}%,#3b3b5c 0)`:'#3b3b5c')}"></span>`).join('');
   $('#hatk').textContent=G.W.e;
-  const sb=$('#hsuper');sb.style.background=g.aiming?'radial-gradient(#ffb347,#ff6a00)':`conic-gradient(#ffd23f ${g.sup}%,#3b3b5c 0)`;sb.textContent=g.aiming?'🎯':g.SP.e;sb.style.boxShadow=g.sup>=100?'0 0 0 6px rgba(255,210,63,.6),0 6px 0 #141433':'0 6px 0 #141433';
+  const sb=$('#hsuper');sb.style.background=g.aiming?'radial-gradient(#ffb347,#ff6a00)':g.bombs>0?'radial-gradient(#ffe57a,#f2b300)':'#3b3b5c';sb.innerHTML=g.aiming?'🎯':g.SP.e+'<span style="position:absolute;right:-4px;bottom:-4px;background:#141433;color:#fff;border-radius:50%;width:30px;height:30px;font-size:1rem;display:flex;align-items:center;justify-content:center;border:2px solid #fff">'+g.bombs+'</span>';sb.style.boxShadow=g.bombs>0?'0 0 0 6px rgba(255,210,63,.6),0 6px 0 #141433':'0 6px 0 #141433';
   if(g.msgT&&g.t>g.msgT){$('#hmsg').textContent='';g.msgT=0;}
 }
 function huntQuiz(){
@@ -1210,7 +1210,7 @@ function huntQuiz(){
   else if(kind==='english'){prompt=`<div class="ko" style="color:var(--ink);text-shadow:none;font-size:${ks}">${esc(w.ko)}</div>`;opts=optionsFor(w,'en').map(o=>[o.en,o.id===w.id]);}
   else{prompt=`<div class="ko" style="color:var(--ink);text-shadow:none;font-size:${ks}">${esc(w.ko)}</div><div class="lbl">진짜 철자는?</div>`;opts=shuffle([w.en,...decoys(w.en,3,w.lastMiss)]).map(o=>[o,o===w.en]);}
   const q=$('#qz');q.style.cssText=g.rot?`position:fixed;left:0;top:0;width:${innerHeight}px;height:${innerWidth}px;transform-origin:0 0;transform:rotate(90deg) translate(0,-100%);z-index:60;background:rgba(10,10,40,.82);align-items:center;justify-content:center;padding:10px`:'z-index:60';
-  q.innerHTML=`<div class="card" style="max-width:${g.rot||innerWidth>innerHeight?'720px':'420px'};padding:12px 16px;max-height:96%;overflow:auto"><div class="badge" style="margin-bottom:4px;font-size:.95rem">⚡ 퀴즈 타임! 맞히면 크리티컬 + 대포 충전</div>
+  q.innerHTML=`<div class="card" style="max-width:${g.rot||innerWidth>innerHeight?'720px':'420px'};padding:12px 16px;max-height:96%;overflow:auto"><div class="badge" style="margin-bottom:4px;font-size:.95rem">⚡ 퀴즈 타임! 맞히면 크리티컬 + 폭탄 +1</div>
     <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;justify-content:center"><div style="flex:1;min-width:180px">${prompt}<div class="qbar"><i id="qb" style="width:100%"></i></div></div>
     <div class="opts grid2" style="flex:1.4;min-width:260px;gap:${land?'6px':'8px'}">${opts.map((o,i)=>`<button class="opt ${kind!=='meaning'?'en':''}" data-i="${i}" style="padding:${land?'7px':'10px'};font-size:${land?'1rem':'1.15rem'}">${esc(o[0])}</button>`).join('')}</div></div><div id="qfb" style="font-size:${land?'.9rem':'1rem'}"></div></div>`;
   q.classList.add('show');
@@ -1218,7 +1218,7 @@ function huntQuiz(){
   const tm=setInterval(()=>{const left=5-(Date.now()-t0)/1000;const qb=$('#qb');if(qb)qb.style.width=Math.max(0,left/5*100)+'%';if(left<=0&&!done)finish(false,true);},50);
   const finish=(ok,timeout)=>{done=true;clearInterval(tm);
     q.querySelectorAll('.opt').forEach((b,i)=>{b.disabled=true;if(opts[i][1])b.classList.add('ok');});
-    if(ok){g.quizOk++;g.critUntil=g.t+(has('crit7')?8:6);g.sup=Math.min(100,g.sup+50);g.pl.hp=Math.min(g.pl.maxhp,g.pl.hp+40);
+    if(ok){g.quizOk++;g.critUntil=g.t+(has('crit7')?8:6);g.bombs++;g.pl.hp=Math.min(g.pl.maxhp,g.pl.hp+40);
       $('#qfb').innerHTML='<div class="good">💥 CRITICAL! '+pick(PRAISE)+'</div>';burst(30);Music.sfx(true);speak(w.en);}
     else{g.wrong.push(w.id);g.ws.push(w);$('#qfb').innerHTML=`<div class="wrongmsg" style="color:var(--ink);text-shadow:none">${timeout?'⏰ 시간 초과! ':''}정답은 <b>${esc(w.en)}</b> · ${esc(w.ko)}</div>`;Music.sfx(false);speak(w.en);}
     setTimeout(()=>{q.classList.remove('show');if(G){G.paused=false;G.last=0;}},ok?900:1600);};
@@ -1237,12 +1237,19 @@ function endHunt(){
   if(isParent()){alpha=0;xp=0;notes=[];}   // 엄마·아빠 게임은 기록만, XP·알파는 시온이 것
   p.alpha+=alpha;p.alphaTotal+=alpha;p.xp+=xp;p.huntBest=Math.max(p.huntBest||0,g.score);p.huntPlays=(p.huntPlays||0)+1;
   S.games.push({date:today(),dk:g.dk,score:g.score,kills:g.kills,quizOk:g.quizOk,quizN:g.quizN,seconds:Math.round(g.t),user:curUser()||'sion',free:!!g.isFree});if(S.games.length>300)S.games=S.games.slice(-300);
-  g.wrong.forEach(id=>{const w=W(id);if(w)w.wrongs=(w.wrongs||0)+1;});
+  // 게임은 학습 기록(별·틀린 횟수)에 손대지 않는다
   save();
   const wrongWords=[...new Set(g.wrong)].map(W).filter(Boolean);
-  view='home';
   if(survived){burst(50);setTimeout(()=>burst(50),400);Music.fx('win');}else Music.fx('lose');
-  render(`
+  const best=S.records[g.dk];
+  const ov=$('#qz');ov.style.cssText=g.rot?`position:fixed;left:0;top:0;width:${innerHeight}px;height:${innerWidth}px;transform-origin:0 0;transform:rotate(90deg) translate(0,-100%);z-index:60;background:rgba(10,10,40,.85);align-items:center;justify-content:center;padding:10px`:'z-index:60';
+  ov.innerHTML=`<div class="card" style="max-width:560px;padding:14px 18px"><h1 style="font-size:2.2rem;margin:0;animation:none">${survived?'VICTORY!':'GAME OVER'}</h1>
+    <div style="font-size:1.1rem;margin:6px 0">${g.D.e} ${g.D.n} · ${survived?(g.limit/60)+'분 생존!':'💔 하트를 다 잃었어요'}</div>
+    <div class="row" style="justify-content:space-around;margin:8px 0"><div><div class="lbl">이번 판</div><div class="big" style="font-size:2.2rem">${g.score}</div></div><div><div class="lbl">KO</div><div class="big" style="font-size:2.2rem;color:var(--blue)">${g.kills}</div></div><div><div class="lbl">퀴즈</div><div class="big" style="font-size:2.2rem;color:var(--green)">${g.quizOk}/${g.quizN}</div></div></div>
+    <div style="font-size:1.1rem">${newRec?'🏆 신기록! ':''}현재 ${g.D.n} 최고 기록: <b>${best.score}점 · ${esc(best.name)}</b></div>
+    <button class="btn primary" id="ov-ok" style="margin:12px 0 0">확인</button></div>`;
+  ov.classList.add('show');
+  const showFinal=()=>{ov.classList.remove('show');ov.style.cssText='';view='home';render(`
     <h1>${survived?'VICTORY!':'GAME<br>OVER'}<small>🎮 ${esc(g.g||'전체')} · ${g.D.e} ${g.D.n}</small></h1>
     <div class="card tilt"><div class="row" style="justify-content:space-around">
       <div><div class="lbl">점수</div><div class="big">${g.score}</div></div>
@@ -1257,7 +1264,8 @@ function endHunt(){
       <div class="earn"><span>남은 판</span><b style="font-family:Jua;font-size:1.1rem">${isParent()?'무제한':huntPlaysLeft()+'판 (배틀 1회 = 티켓 1장)'}</b></div></div>
     ${wrongWords.length?`<h2>다시 볼 단어</h2>${wrongWords.map(w=>`<div class="wl" data-say="${esc(w.en)}"><span><b>${esc(w.en)}</b> <span class="muted">${esc(w.ko)}</span></span></div>`).join('')}`:''}
     <button class="btn primary" onclick="showHome()">홈으로</button>
-    ${huntPlaysLeft()>0?`<button class="btn blue" onclick="showHuntSetup('${esc(g.g)}')">🎮 한 판 더</button>`:''}`);
+    ${huntPlaysLeft()>0?`<button class="btn blue" onclick="showHuntSetup('${esc(g.g)}')">🎮 한 판 더</button>`:''}`);};
+  $('#ov-ok').onclick=showFinal;$('#ov-ok').addEventListener('touchend',e=>{e.preventDefault();showFinal();});
   G=null;
 }
 
@@ -1316,8 +1324,8 @@ function showParent(){
     <h2>자주 틀리는 철자</h2>
     <div class="panel list">${misses.length?misses.map(w=>`<div><b>${esc(w.en)}</b> → <span style="color:var(--red)">${esc(w.lastMiss)}</span></div>`).join(''):'<div class="muted">아직 없어요</div>'}</div>
     <h2 style="margin-top:40px">초기화 (비밀번호 필요)</h2>
-    <div class="row"><button class="btn danger" id="resetxp">경험치·알파·뱃지 초기화</button><button class="btn danger" id="reset">단어·기록 초기화</button></div>
-    <div class="sub" style="font-size:.9rem">왼쪽은 시온 현황만 0으로, 오른쪽은 단어·학습 기록·현황 모두 지워요.</div>`);
+    <div class="row"><button class="btn danger" id="resetstar">단어 별(숙련도) 초기화</button><button class="btn danger" id="resetxp">경험치·알파·뱃지 초기화</button><button class="btn danger" id="reset">단어·기록 초기화</button></div>
+    <div class="sub" style="font-size:.9rem">별 초기화는 단어 숙련도만 0으로, 경험치 초기화는 시온 현황만 0으로, 단어·기록 초기화는 전부 지워요.</div>`);
   $('#addw').onclick=()=>{const n=addWords(parseWords($('#wt').value),$('#wg').value);toast(n+'개 추가했어요');showParent();};
   $('#sample').onclick=()=>{const n=addWords(parseWords(SAMPLE),$('#wg').value||'예시');toast(n+'개 추가했어요');showParent();};
   app.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{const w=W(b.dataset.del);ask(`"${esc(w.en)}" 지울까요?`,()=>{S.words=S.words.filter(x=>x.id!==w.id);save();showParent();});});
@@ -1328,6 +1336,7 @@ function showParent(){
     const ng=v.g||'기본';S.words.forEach(w=>{if(w.group===g)w.group=ng;});if(S.group===g)S.group=ng;save();showParent();toast('바꿨어요');});});
   app.querySelectorAll('[data-delg]').forEach(b=>b.onclick=()=>{const g=b.dataset.delg;ask(`"${esc(g)}" 묶음 전체를 지울까요?`,()=>{S.words=S.words.filter(x=>x.group!==g);save();showParent();});});
   const pwAsk=(msg,fn)=>{ask(msg+'<br><input id="rpw" class="inp" type="password" style="font-size:1.2rem;font-family:Jua" placeholder="초기화 비밀번호">',()=>{if($('#rpw').value!==RESET_PW){toast('비밀번호가 달라요');return;}fn();});$('#rpw').focus();};
+  $('#resetstar').onclick=()=>pwAsk('모든 단어의 별을 0으로 되돌릴까요?<br><span class="muted" style="font-size:1rem">단어·기록·알파는 그대로예요</span>',()=>{S.words.forEach(w=>{w.mastery=0;w.box=0;});save();showParent();toast('별을 모두 0으로 되돌렸어요');});
   $('#reset').onclick=()=>pwAsk('단어와 학습 기록, 시온 현황을 모두 지울까요?',()=>{S=migrate({words:[],sessions:[],cur:null,group:''});save();showParent();toast('모두 지웠어요');});
   $('#resetxp').onclick=()=>pwAsk('경험치·알파·뱃지·연속 기록을 0으로 돌릴까요?<br><span class="muted" style="font-size:1rem">단어와 별은 그대로 남아요</span>',()=>{S.prof=migrate({words:[],sessions:[]}).prof;S.sessions=[];S.words.forEach(w=>{delete w.comeback;delete w.wrongs;});save();showParent();toast('현황을 초기화했어요');});
   const on=(id,fn)=>{const el=$('#'+id);if(el)el.onclick=fn;};
