@@ -333,7 +333,12 @@ function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function stars(m){return '★'.repeat(m)+'☆'.repeat(5-m);}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function speak(t){try{speechSynthesis.cancel();setTimeout(()=>{const u=new SpeechSynthesisUtterance(t);u.lang='en-US';u.rate=0.85;speechSynthesis.speak(u);},80);}catch(e){}}   // cancel 직후 speak가 씹히는 크롬 버그 피하려고 살짝 늦게
+// 영어 목소리 고르기: 기기 기본 목소리가 한국어면 영어를 '스.니.키'처럼 읽어서, 영어(en-US 우선) 목소리를 명시적으로 고른다
+let EN_VOICE=null;
+function pickVoice(){try{const vs=speechSynthesis.getVoices();if(!vs.length)return;const norm=v=>(v.lang||'').replace('_','-').toLowerCase();
+  for(const pre of ['en-us','en-gb','en-au','en']){const good=vs.find(v=>norm(v).startsWith(pre)&&/google|natural|neural|premium|enhanced|samantha|daniel|karen/i.test(v.name))||vs.find(v=>norm(v).startsWith(pre));if(good){EN_VOICE=good;return;}}}catch(e){}}
+if(window.speechSynthesis){speechSynthesis.onvoiceschanged=pickVoice;pickVoice();}
+function speak(t){try{speechSynthesis.cancel();setTimeout(()=>{if(!EN_VOICE)pickVoice();const u=new SpeechSynthesisUtterance(t);if(EN_VOICE)u.voice=EN_VOICE;u.lang=EN_VOICE?EN_VOICE.lang:'en-US';u.rate=0.9;speechSynthesis.speak(u);},80);}catch(e){}}   // cancel 직후 speak가 씹히는 크롬 버그 피하려고 살짝 늦게
 let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2500);}
 const $=s=>document.querySelector(s);
 const rInt=n=>Math.floor(Math.random()*n);
