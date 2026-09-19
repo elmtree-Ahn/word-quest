@@ -361,7 +361,7 @@ const INFO={
   alpha:['🔺 알파','잘했을 때만 받는 특별한 보석이에요. 절대 안 줄어요.<br>배틀에서 틀린 단어가 1개 이하면 +1, 하나도 안 틀리면 +1 더!<br>연속 정답 15개 +1, 3일·7일·30일 연속 학습 보너스, 뱃지 10개마다 +1'],
   streak:['🔥 연속 학습','하루도 안 빼먹고 배틀한 날 수예요.<br>3일째 알파 1개, 7일째 3개, 30일째 10개!<br>하루 빠지면 다시 0부터.'],
   words:['📚 누적 단어','지금까지 부모님이 넣어준 모든 단어 수예요.'],
-  trophy:['🏆 트로피','단어마다 별이 최대 5개 있어요. 그 별을 전부 더한 수가 트로피!<br>배틀에서 한 번 맞힐 때마다 별 1개, 틀리면 1개 빠져요. 게임은 별과 상관없어요.'],
+  trophy:['🏆 트로피','단어마다 별이 최대 5개 있어요. 그 별을 전부 더한 수가 트로피!<br>배틀에서 한 번 맞힐 때마다 별 1개! 틀려도 별은 안 빠져요. 게임은 별과 상관없어요.'],
   conquer:['👑 정복','별 5개를 다 채운 단어 수예요. 다섯 번의 배틀에서 맞혀야 정복!'],
   title:['🏷️ 칭호','레벨에 따라 자동으로 붙고, 뱃지 화면에서 딴 뱃지를 누르면 그 이름으로 바꿀 수 있어요.'],
 };
@@ -495,7 +495,7 @@ function finish(){
     const w=W(id),wrong=c.wrong[id]||0;
     if(wrong===0){conquered.push(id);w.due=addDays(t,INTERVALS[Math.min(w.box||0,4)]);w.box=(w.box||0)+1;}
     else{retry.push(id);w.box=0;w.due=addDays(t,1);}
-    if(wrong>0)w.mastery=Math.max(0,w.mastery-1);
+    // 틀려도 별은 안 뺏어요 (복습만 내일로)
   });
   const rec={date:t,wids:c.wids,conquered,retry,seconds:Math.round(c.seconds),exits:c.exits,test:c.test||null};
   S.sessions.push(rec);
