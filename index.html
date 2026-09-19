@@ -865,7 +865,7 @@ GAMES.match=w=>{
 const SHOP=[
  {id:'skin_gold',t:'skin',n:'골드 가운',e:'🥼',p:10,d:'반짝이는 황금 가운'},{id:'skin_ninja',t:'skin',n:'닌자 시온',e:'🥷',p:8,d:'검은 닌자복'},
  {id:'skin_space',t:'skin',n:'우주 시온',e:'👨‍🚀',p:12,d:'은빛 우주복'},{id:'skin_dragon',t:'skin',n:'드래곤 슈트',e:'🐉',p:20,d:'붉은 드래곤 갑옷'},
- {id:'wpn_shot',t:'wpn',n:'연필 샷건',e:'🔫',p:8,d:'3발 부채꼴 · 드디어 원거리!'},{id:'wpn_beaker',t:'wpn',n:'비커 러너',e:'🧪',p:6,d:'첫 총으로 딱 · 한 발이 세요'},
+ {id:'wpn_shot',t:'wpn',n:'연필 샷건',e:'🔫',p:8,d:'3발 부채꼴 · 가까이서 강해요'},{id:'wpn_beaker',t:'wpn',n:'비커 러너',e:'🧪',p:6,d:'딱총의 2배 위력 · 장전 빨라요'},
  {id:'wpn_bolt',t:'wpn',n:'번개 관통',e:'⚡',p:10,d:'적을 뚫고 지나가요 · 사거리 최고'},{id:'wpn_rocket',t:'wpn',n:'로켓 연필',e:'🚀',p:14,d:'느리지만 터지면 주변까지 피해'},
  {id:'sup_bomb',t:'sup',n:'폭탄 대포',e:'💥',p:8,d:'보이는 적 전부에게 포탄 120'},{id:'sup_laser',t:'sup',n:'번개 대포',e:'⚡',p:12,d:'포탄 95 + 맞은 적 느려짐'},
  {id:'sup_heal',t:'sup',n:'회복 대포',e:'💚',p:10,d:'포탄 60 + 내 체력 70 회복'},{id:'sup_storm',t:'sup',n:'연속 대포',e:'🌪️',p:15,d:'포탄 70 뒤에 한 번 더 45'},
@@ -881,7 +881,7 @@ function drawPix(ctx,x,y,sc,skin){const pal={...PAL.base,...(PAL[skin]||{})};PIX
 function showShop(){
   view='shop';
   const p=S.prof;p.items=p.items||{};
-  const kinds={skin:'👕 스킨',wpn:'🔫 총 (기본은 연필로 때리기 · 총을 사야 멀리서 쏴요)',up:'⬆️ 무기 업그레이드 (모든 총·연필에 적용)',sup:'💣 폭탄 (누르면 조준 → 다시 누르면 발사)',buff:'💪 능력'};
+  const kinds={skin:'👕 스킨',wpn:'🔫 총 (기본은 약한 딱총 · 사면 더 세고 멀리)',up:'⬆️ 무기 업그레이드 (모든 총·연필에 적용)',sup:'💣 폭탄 (누르면 조준 → 다시 누르면 발사)',buff:'💪 능력'};
   render(`<div class="top"><button class="ico" onclick="showHome()">🏠 홈</button><span class="badge">🛒 알파 상점</span><span>🔺${p.alpha}</span></div>
     <div class="card" style="padding:12px 18px;display:flex;gap:14px;align-items:center;text-align:left"><div id="av"></div><div><div style="font-size:1.2rem">시온 헌터</div><div class="lbl">알파로 아이템을 사요. 한 번 사면 영원히 내 것!</div></div></div>
     ${Object.keys(kinds).map(k=>`<h2>${kinds[k]}</h2>${SHOP.filter(i=>i.t===k).map(i=>{const own=has(i.id),eq=(i.t==='skin'&&p.skin===i.id)||(i.t==='wpn'&&p.wpn===i.id)||(i.t==='sup'&&p.sup===i.id);
@@ -895,7 +895,7 @@ function showShop(){
 }
 
 // ── 브롤헌터스 3D: Three.js 아레나, 양손 조이스틱, AI 봇, 총·대포 ─────────
-const WEAPONS={basic:{n:'연필 휘두르기',e:'✏️',dmg:34,spd:18,range:2.3,ammo:3,reload:.9,count:1,spread:0,col:0x7ed957,r:.24},   // 기본은 근접! 총은 알파로
+const WEAPONS={basic:{n:'기본 딱총',e:'🔫',dmg:18,spd:20,range:7,ammo:3,reload:1.3,count:1,spread:0,col:0x7ed957,r:.18},   // 기본은 약한 딱총. 좋은 총은 알파로
  wpn_shot:{n:'연필 샷건',e:'🔫',dmg:15,spd:20,range:6.5,ammo:3,reload:1.5,count:3,spread:.25,col:0xffb347,r:.16},
  wpn_beaker:{n:'비커 러너',e:'🧪',dmg:34,spd:26,range:10,ammo:3,reload:1.1,count:1,spread:0,col:0x2ecc71,r:.22},
  wpn_bolt:{n:'번개 관통',e:'⚡',dmg:28,spd:32,range:12.5,ammo:2,reload:1.7,count:1,spread:0,pierce:true,col:0xffd23f,r:.2},
@@ -990,7 +990,7 @@ function showHuntSetup(g){
   view='home';const w=curWeapon(),sp=curSuper();
   render(`<div class="top"><button class="ico" onclick="showHome()">🏠 홈</button><span class="badge">🎮 브롤헌터스</span><span>${isParent()?'무제한':'남은 '+huntPlaysLeft()+'판'}</span></div>
     <h1 style="font-size:2.2rem">BRAWL<br>HUNTERS<small>난이도를 골라요</small></h1>
-    <div class="card" style="text-align:left;padding:10px 16px;display:flex;gap:12px;align-items:center"><div id="av"></div><div><div>${w.e} ${w.n} · ${sp.e} ${sp.n}</div><div class="lbl">기본은 연필로 때리기(가까이 가야 해요). 총·대포는 🛒 알파 상점에서!</div></div></div>
+    <div class="card" style="text-align:left;padding:10px 16px;display:flex;gap:12px;align-items:center"><div id="av"></div><div><div>${w.e} ${w.n} · ${sp.e} ${sp.n}</div><div class="lbl">기본은 약한 딱총. 센 총·업그레이드·폭탄은 🛒 알파 상점에서!</div></div></div>
     ${Object.keys(DIFF).map(k=>{const rc=(S.records||{})[k];return `<button class="btn ${k==='hard'?'danger':k==='normal'?'blue':''}" data-d="${k}" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap"><span>${DIFF[k].e} ${DIFF[k].n}</span><small style="font-size:.9rem;-webkit-text-stroke:0">${DIFF[k].d}</small><small style="width:100%;text-align:left;font-size:.85rem;-webkit-text-stroke:0;opacity:.9">🏆 최고 기록: ${rc?rc.score+'점 · '+esc(rc.name)+' ('+rc.date.slice(5)+')':'아직 없음'}</small></button>`;}).join('')}
     <div class="sub" style="font-size:.9rem">게임은 전체화면·가로로 열려요 (기기를 가로로 잡으세요)<br>하루 첫 무료 판은 1분, 티켓 판은 3분 (배틀 1회 = 티켓 1장, 하루 3장)<br>태블릿: 왼쪽 아무 데나 대고 끌기 = 이동 · 오른쪽 탭 = 보는 방향으로 공격 · 오른쪽 끌기 = 조준해서 공격<br>PC: 화살표 = 이동 · 스페이스 = 공격 · 엔터 = 폭탄 조준, 한 번 더 = 발사</div>`);
   $('#av').appendChild(avatarCanvas());
