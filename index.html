@@ -900,7 +900,7 @@ function showShop(){
 }
 
 // ── 브롤헌터스 3D: Three.js 아레나, 양손 조이스틱, AI 봇, 총·대포 ─────────
-const WEAPONS={basic:{n:'기본 딱총',e:'🔫',dmg:18,spd:26,range:21,ammo:3,reload:1.3,count:1,spread:0,col:0xffd23f,r:.22},   // 기본은 약한 딱총. 좋은 총은 알파로
+const WEAPONS={basic:{n:'기본 딱총',e:'🔫',dmg:18,spd:26,range:21,ammo:5,reload:1.1,count:1,spread:0,col:0xffd23f,r:.22},   // 기본은 약한 딱총. 좋은 총은 알파로
  wpn_shot:{n:'연필 샷건',e:'🔫',dmg:15,spd:20,range:6.5,ammo:3,reload:1.5,count:3,spread:.25,col:0xffb347,r:.16},
  wpn_beaker:{n:'비커 러너',e:'🧪',dmg:34,spd:26,range:10,ammo:3,reload:1.1,count:1,spread:0,col:0x2ecc71,r:.22},
  wpn_bolt:{n:'번개 관통',e:'⚡',dmg:28,spd:32,range:12.5,ammo:2,reload:1.7,count:1,spread:0,pierce:true,col:0xffd23f,r:.2},
@@ -1123,7 +1123,7 @@ function huntLoop(){
   const ts=Date.now();if(!G.last)G.last=ts;const dt=Math.min(.05,(ts-G.last)/1000);G.last=ts;
   if(!G.paused)huntTick(dt);
   if(!G||G.over)return;
-  const p=G.pl,sk=G.shake>0?(G.shake-=0.016,(Math.random()-.5)*.5):0;G.cam.position.set(p.x+sk,30,p.z+15+sk);G.cam.lookAt(p.x,0,p.z);G.R.render(G.sc,G.cam);   // 항상 내 캐릭터가 화면 가운데
+  const p=G.pl,sk=G.shake>0?(G.shake-=0.016,(Math.random()-.5)*.5):0;G.cam.position.set(p.x+sk,23,p.z+11.5+sk);G.cam.lookAt(p.x,0,p.z);   // 1.3배 줌 (30/15 → 23/11.5)G.R.render(G.sc,G.cam);   // 항상 내 캐릭터가 화면 가운데
   if(G.t>=G.limit)endHunt();
 }
 function huntTick(dt){
