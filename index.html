@@ -317,6 +317,7 @@ function migrate(s){
     return w;
   });
   s.sessions=s.sessions||[];s.games=s.games||[];s.group=s.group||'';s.cur=s.cur||null;s.records=s.records||{};
+  if(!s.starsV2){s.words.forEach(w=>{w.mastery=0;w.box=0;});s.starsV2=true;}   // 2026-09-19 별 규칙 변경: 예전 방식으로 쌓인 별을 한 번 전부 0으로 (배틀로 다시 쌓기)
   s.prof={xp:0,alpha:0,alphaTotal:0,correctTotal:0,season:1,seasonsDone:0,badgeMs:0,battles:0,perfects:0,bossWins:0,testPerfects:0,bestCombo:0,fastest:0,comebacks:0,weekend:0,lastStreakDay:'',lastWeekend:'',title:'',...(s.prof||{})};s.prof.badges=s.prof.badges||{};s.prof.items=s.prof.items||{};if(!s.prof.alphaTotal)s.prof.alphaTotal=s.prof.alpha;
   if(s.cur){s.cur.queue=s.cur.queue||[];s.cur.wrong=s.cur.wrong||{};s.cur.bossWrong=s.cur.bossWrong||{};s.cur.wids=s.cur.wids||[];}
   return s;
